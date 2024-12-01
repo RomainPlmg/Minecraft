@@ -11,6 +11,13 @@ endif()
 
 project ("Minecraft")
 
+add_compile_definitions(PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}/" ENG_DEBUG)
+
+if (WIN32)
+	add_compile_definitions(-DENG_PLATFORM_WINDOWS)
+endif()
+
+
 # Include sub-projects.
 add_subdirectory("Engine")
 add_subdirectory ("Minecraft")

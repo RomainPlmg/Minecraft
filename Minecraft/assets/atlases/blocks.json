@@ -1,0 +1,7 @@
+[
+    {
+        "type": "directory",
+        "source": "blocks",
+        "prefix": "blocks/"
+    }
+]
