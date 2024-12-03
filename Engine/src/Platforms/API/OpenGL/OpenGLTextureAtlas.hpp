@@ -6,7 +6,7 @@ namespace Engine {
 
 class OpenGLTextureAtlas : public TextureAtlas {
    public:
-    OpenGLTextureAtlas();
+    OpenGLTextureAtlas(const std::string& jsonPath);
 
     virtual void Init() override;
     virtual void Bind() override;

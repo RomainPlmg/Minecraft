@@ -9,6 +9,7 @@ class Color;
 class BufferLayout;
 class TextureAtlas;
 class Event;
+class Shader;
 
 class Renderer {
    public:
@@ -21,6 +22,8 @@ class Renderer {
     void SetClearColor(const Color& color);
     void Clear();
     void Draw();
+    void IncreaseIndexArray(Shader* shader);
+    void DecreaseIndexArray(Shader* shader);
 
     void OnEvent(const Event& event);
 
@@ -30,8 +33,7 @@ class Renderer {
     RendererAPI* m_RendererAPI;
 
     BufferLayout* m_BufferLayout;
-    TextureAtlas* m_TextureAtlas;
-    std::vector<uint32_t> m_Indices;
+    std::unordered_map<Shader*, std::vector<uint32_t>> m_Indices;
 
     glm::mat4 m_ProjMatrix;
 };

@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Engine.hpp"
+#include <Engine.hpp>
 
-class Block {
+class Block : public Engine::Drawable {
    public:
+    Block();
+
    private:
 };

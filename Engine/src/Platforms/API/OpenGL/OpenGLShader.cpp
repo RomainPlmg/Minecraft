@@ -9,7 +9,8 @@
 namespace Engine {
 
 OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexPath,
-                           const std::string& fragmentPath) {
+                           const std::string& fragmentPath)
+    : Shader(name) {
     /* Read shader codes */
     std::string vertexSrc = Utils::ReadFromFile(vertexPath);
     std::string fragmentSrc = Utils::ReadFromFile(fragmentPath);

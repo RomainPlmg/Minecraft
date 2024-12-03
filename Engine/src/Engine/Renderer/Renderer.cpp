@@ -15,12 +15,11 @@
 namespace Engine {
 
 Renderer::Renderer()
-    : m_RendererAPI(nullptr), m_ProjMatrix(glm::mat4(1.0f)), m_TextureAtlas(nullptr) {}
+    : m_RendererAPI(nullptr), m_ProjMatrix(glm::mat4(1.0f)), m_BufferLayout(nullptr) {}
 
 Renderer::~Renderer() {
     delete m_RendererAPI;
     delete m_BufferLayout;
-    delete m_TextureAtlas;
 }
 
 void Renderer::Init() {
@@ -30,19 +29,9 @@ void Renderer::Init() {
     m_RendererAPI = RendererAPI::Create();
     m_RendererAPI->Init();
 
-    m_TextureAtlas = TextureAtlas::Create();
-    m_TextureAtlas->Init();
-
     m_BufferLayout = new BufferLayout({BufferElement(ShaderDataType::Float3, "position"),
                                        BufferElement(ShaderDataType::Float3, "color"),
                                        BufferElement(ShaderDataType::Float2, "uv")});
-
-    m_Indices.push_back(0);
-    m_Indices.push_back(1);
-    m_Indices.push_back(3);
-    m_Indices.push_back(1);
-    m_Indices.push_back(2);
-    m_Indices.push_back(3);
 
     m_ProjMatrix = glm::perspective(glm::radians(45.0f),
                                     (float)Application::GetInstance()->GetWindow()->GetWidth() /
@@ -61,40 +50,62 @@ void Renderer::SetClearColor(const Color& color) { m_RendererAPI->SetClearColor(
 void Renderer::Clear() { m_RendererAPI->Clear(); }
 
 void Renderer::Draw() {
-    std::vector<float> vertices;
+    if (Drawable::GetArray().empty()) return;
 
-    for (const auto& object : Drawable::GetArray()) {
-        vertices.insert(vertices.end(), object->GetVertices().begin(), object->GetVertices().end());
+    Application::GetInstance()->GetTextureAtlas("blockAtlas")->Bind();
+
+    for (const auto& shader : ShaderLibrary::GetShaderArray()) {
+        shader->Bind();
+        shader->SetUniformMat4("projMatrix", m_ProjMatrix);
+
+        std::vector<float> vertices;
+
+        for (const auto& object : Drawable::GetArray()) {
+            if (object->GetShader() == shader) {
+                vertices.insert(vertices.end(), object->GetVertices().begin(),
+                                object->GetVertices().end());
+            }
+        }
+
+        VertexBuffer* vbo = VertexBuffer::Create(vertices.data(),
+                                                 static_cast<int>(vertices.size() * sizeof(float)));
+        ElementBuffer* ebo = ElementBuffer::Create(m_Indices[shader].data(),
+                                                   static_cast<uint32_t>(m_Indices[shader].size()));
+
+        vbo->SetLayout(*m_BufferLayout);
+
+        VertexArray* vao = VertexArray::Create();
+        vao->AddVertexBuffer(vbo);
+        vao->UpdateElementBuffer(ebo);
+
+        vao->Bind();
+        ebo->Bind();
+        m_RendererAPI->Draw(ebo->GetCount());
+
+        delete vbo;
+        delete ebo;
+        delete vao;
     }
+}
 
-    TextureInfo::UV uv = m_TextureAtlas->GetTexture("stone")->GetAtlasUV();
-    // clang-format off
-    float vertices1[] = {-0.5f, -0.5f, -5.0f,     0.0f, 0.0f, 0.0f,   uv.uMin, uv.vMin,
-                        -0.5f,  0.5f, -5.0f,     0.0f, 0.0f, 0.0f,   uv.uMin, uv.vMax,
-                         0.5f,  0.5f, -5.0f,     0.0f, 0.0f, 0.0f,   uv.uMax, uv.vMax,
-                         0.5f, -0.5f, -5.0f,     0.0f, 0.0f, 0.0f,   uv.uMax, uv.vMin,
-                        };
-    // clang-format on
+void Renderer::IncreaseIndexArray(Shader* shader) {
+    unsigned int baseIndex = static_cast<uint32_t>(m_Indices[shader].size() / 6 *
+                                                   4);  // The last used index, based on vertices
 
-    // VertexBuffer* vbo = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(float));
-    VertexBuffer* vbo = VertexBuffer::Create(vertices1, 32 * sizeof(float));
-    ElementBuffer* ebo =
-        ElementBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+    // Add indices for a new rectangle (2 triangles)
+    m_Indices[shader].push_back(baseIndex + 0);  // Triangle 1 : first vertex
+    m_Indices[shader].push_back(baseIndex + 1);  // Triangle 1 : second vertex
+    m_Indices[shader].push_back(baseIndex + 3);  // Triangle 1 : third vertex
+    m_Indices[shader].push_back(baseIndex + 1);  // Triangle 2 : first vertex
+    m_Indices[shader].push_back(baseIndex + 2);  // Triangle 2 : second vertex
+    m_Indices[shader].push_back(baseIndex + 3);  // Triangle 2 : third vertex
+}
 
-    vbo->SetLayout(*m_BufferLayout);
-
-    VertexArray* vao = VertexArray::Create();
-    vao->AddVertexBuffer(vbo);
-    vao->UpdateElementBuffer(ebo);
-
-    ShaderLibrary::GetShader("default")->Bind();
-    ShaderLibrary::GetShader("default")->SetUniformMat4("projMatrix", m_ProjMatrix);
-
-    m_RendererAPI->Draw(ebo->GetCount());
-
-    delete vbo;
-    delete ebo;
-    delete vao;
+void Renderer::DecreaseIndexArray(Shader* shader) {
+    if (m_Indices[shader].size() >= 6) {
+        // Delete the last 6 indices
+        m_Indices[shader].erase(m_Indices[shader].end() - 6, m_Indices[shader].end());
+    }
 }
 
 void Renderer::OnEvent(const Event& event) {

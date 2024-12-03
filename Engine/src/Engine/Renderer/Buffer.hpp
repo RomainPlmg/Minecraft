@@ -61,7 +61,7 @@ struct ENGINE_API BufferElement {
     uint32_t Offset = 0;
     bool Normalized;
 
-    BufferElement() = default;
+    BufferElement() : Normalized(false), Size(0), Type(ShaderDataType::None) {}
     BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
         : Name(name),
           Type(type),
@@ -115,11 +115,12 @@ class ENGINE_API BufferLayout {
 
    private:
     std::vector<BufferElement> m_Elements;
-    uint32_t m_Stride;
+    uint32_t m_Stride = 0;
 };
 
 class ENGINE_API VertexBuffer {
    public:
+    VertexBuffer() = default;
     virtual ~VertexBuffer() = default;
 
     virtual void Bind() = 0;
@@ -134,6 +135,7 @@ class ENGINE_API VertexBuffer {
 
 class ENGINE_API ElementBuffer {
    public:
+    ElementBuffer() = default;
     virtual ~ElementBuffer() = default;
 
     virtual void Bind() = 0;
@@ -143,7 +145,7 @@ class ENGINE_API ElementBuffer {
     static ElementBuffer* Create(uint32_t* indices, uint32_t count);
 
    protected:
-    uint32_t m_Count;
+    uint32_t m_Count = 0;
 };
 
 }  // namespace Engine

@@ -8,8 +8,10 @@ namespace Engine {
 
 class ENGINE_API Shader {
    public:
-    Shader() = default;
+    Shader(const std::string& name) : m_Name(name) {}
     virtual ~Shader() = default;
+
+    inline const std::string& GetName() const { return m_Name; }
 
     virtual void Bind() const = 0;
     virtual void Unbind() const = 0;
@@ -25,6 +27,9 @@ class ENGINE_API Shader {
 
     static Shader* Create(const std::string& name, const std::string& vertexPath,
                           const std::string& fragmentPath);
+
+   private:
+    std::string m_Name;
 };
 
 class ENGINE_API ShaderLibrary {
@@ -32,9 +37,10 @@ class ENGINE_API ShaderLibrary {
     static void Create(const std::string& name, const std::string& vertexPath,
                        const std::string& fragmentPath);
     static Shader* GetShader(const std::string& name);
+    static const std::vector<Shader*>& GetShaderArray() { return m_Shaders; }
 
    private:
-    static std::unordered_map<std::string, Shader*> m_Shaders;
+    static std::vector<Shader*> m_Shaders;
 };
 
 }  // namespace Engine

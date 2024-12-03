@@ -37,6 +37,7 @@ endif()
 
 target_compile_definitions(Engine PRIVATE ENG_BUILD_DLL)
 target_compile_definitions(Engine PRIVATE PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}/")
+target_compile_definitions(Engine PRIVATE APPLICATION_SOURCE_DIR="${CMAKE_SOURCE_DIR}/Minecraft/")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Engine PROPERTY CXX_STANDARD 20)

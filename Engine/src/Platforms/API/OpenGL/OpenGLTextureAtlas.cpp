@@ -7,8 +7,8 @@
 
 namespace Engine {
 
-OpenGLTextureAtlas::OpenGLTextureAtlas() {
-    LoadJSON(PROJECT_SOURCE_DIR "Minecraft/assets/atlases/blocks.json");
+OpenGLTextureAtlas::OpenGLTextureAtlas(const std::string& jsonPath) : m_RendererID(0) {
+    LoadJSON(jsonPath);
 }
 
 void OpenGLTextureAtlas::Init() {

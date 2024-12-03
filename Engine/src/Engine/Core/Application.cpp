@@ -9,7 +9,7 @@ namespace Engine {
 
 Application* Application::m_Instance = nullptr;
 
-Application::Application() {
+Application::Application() : m_Renderer(nullptr), m_Window(nullptr) {
     if (m_Instance == nullptr) {
         m_Instance = this;
     } else {

@@ -28,20 +28,22 @@ Shader* Shader::Create(const std::string& name, const std::string& vertexPath,
 }
 
 // Shader Library
-std::unordered_map<std::string, Shader*> ShaderLibrary::m_Shaders;
+std::vector<Shader*> ShaderLibrary::m_Shaders;
 
 void ShaderLibrary::Create(const std::string& name, const std::string& vertexPath,
                            const std::string& fragmentPath) {
-    m_Shaders[name] = Shader::Create(name, vertexPath, fragmentPath);
+    m_Shaders.emplace_back(Shader::Create(name, vertexPath, fragmentPath));
 }
 
 Shader* ShaderLibrary::GetShader(const std::string& name) {
-    if (m_Shaders.find(name) != m_Shaders.end()) {
-        return m_Shaders.at(name);
-    } else {
-        CORE_ERROR("Shader '{0}' does not exists.", name);
-        return nullptr;
+    for (const auto& shader : m_Shaders) {
+        if (shader->GetName() == name) {
+            return shader;
+        }
     }
+
+    CORE_ERROR("Shader '{0}' does not exists.", name);
+    return nullptr;
 }
 
 }  // namespace Engine

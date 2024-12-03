@@ -1,7 +1,8 @@
 [
-    {
-        "type": "directory",
-        "source": "blocks",
-        "prefix": "blocks/"
-    }
+  {
+    "textureFolder": "./assets/textures/",
+    "type": "directory",
+    "source": "blocks",
+    "prefix": "blocks/"
+  }
 ]

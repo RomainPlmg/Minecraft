@@ -19,12 +19,12 @@ TextureAtlas::~TextureAtlas() {
     m_TextureArray.clear();
 }
 
-TextureAtlas* TextureAtlas::Create() {
+TextureAtlas* TextureAtlas::Create(const std::string& jsonPath) {
     switch (RendererAPI::GetAPI()) {
         case GraphicAPI::None:
             CORE_FATAL("No selected graphic API.");
         case GraphicAPI::OpenGL:
-            return new OpenGLTextureAtlas();
+            return new OpenGLTextureAtlas(jsonPath);
         case GraphicAPI::Vulkan:
             CORE_FATAL("Vulkan is not actually supported");
         default:
@@ -42,9 +42,10 @@ void TextureAtlas::LoadJSON(const std::string& path) {
 
     for (const auto& item : data) {
         std::string source = item["source"];
-        std::string texturePath = PROJECT_SOURCE_DIR "Minecraft/assets/textures/" + source;
+        std::string texturePath = item["textureFolder"];
+        std::string finalFolder = APPLICATION_SOURCE_DIR + texturePath + source;
 
-        for (const auto& entry : std::filesystem::directory_iterator(texturePath)) {
+        for (const auto& entry : std::filesystem::directory_iterator(finalFolder)) {
             // Find the last slash or backslash
             size_t lastSlash = entry.path().string().find_last_of("/\\");
             // Extract the filename with extension

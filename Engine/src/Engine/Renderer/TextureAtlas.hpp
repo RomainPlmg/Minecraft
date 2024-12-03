@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Engine/Core/Core.hpp"
 #include "Texture.hpp"
 
 namespace Engine {
 
-class TextureAtlas {
+class ENGINE_API TextureAtlas {
    public:
     TextureAtlas() = default;
     virtual ~TextureAtlas();
@@ -16,7 +17,7 @@ class TextureAtlas {
         return m_TextureArray.at(textureName);
     }
 
-    static TextureAtlas* Create();
+    static TextureAtlas* Create(const std::string& jsonPath);
 
    protected:
     int m_Width = 0, m_Height = 0, m_Resolution = 0;
