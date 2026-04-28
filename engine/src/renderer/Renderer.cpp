@@ -9,6 +9,8 @@ namespace opticrafter {
 Renderer::Renderer(const GLContext& ctx) {
     (void)ctx;  // Guard, need a valid context to build renderer
 
+    m_texture_manager = std::make_unique<TextureManager>(ctx);
+
     setViewport({0, 0, 50, 50});
     setClearColor({30, 30, 30, 255});
 
@@ -16,6 +18,8 @@ Renderer::Renderer(const GLContext& ctx) {
 }
 
 Renderer::~Renderer() { LOG_CORE_DEBUG("Renderer destroy successful!"); }
+
+TextureID Renderer::createTexture(const std::string& path) { m_texture_manager->load(path); }
 
 void Renderer::clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 

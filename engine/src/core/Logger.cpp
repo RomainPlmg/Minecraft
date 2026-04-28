@@ -29,7 +29,7 @@ static spdlog::level::level_enum toSpdlogLevel(LogLevel level) {
 
 void Logger::init() {
     if (g_core_logger != nullptr || g_app_logger != nullptr) {
-        LOG_WARN("Logger already initialized.");
+        LOG_CORE_WARN("Logger already initialized.");
         return;
     }
 
@@ -45,7 +45,7 @@ void Logger::init() {
     g_core_logger->set_level(spdlog::level::info);
 #endif
 
-    LOG_CORE_INFO("Logger initialized.");
+    LOG_CORE_DEBUG("Logger init successful!");
 }
 
 spdlog::logger& Logger::getCoreLogger() {
