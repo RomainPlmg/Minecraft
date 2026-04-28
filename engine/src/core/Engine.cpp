@@ -39,6 +39,7 @@ void Engine::run() {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) running = false;
         }
+        m_event_bus.pollEvents();
 
         m_renderer->clear();
 
