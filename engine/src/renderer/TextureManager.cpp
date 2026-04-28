@@ -9,16 +9,17 @@ namespace opticrafter {
 
 static GLuint upload(int w, int h, const void* pixels) {
     GLuint id;
-    glCreateTextures(GL_TEXTURE_2D, 1, &id);
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
 
-    glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTextureStorage2D(id, 1, GL_RGBA8, w, h);
-    glTextureSubImage2D(id, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
+    glBindTexture(GL_TEXTURE_2D, 0);
     return id;
 }
 
@@ -57,7 +58,8 @@ void TextureManager::bind(TextureID id, uint32_t slot) {
         return;
     }
 
-    glBindTextureUnit(slot, m_textures[id]);
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_textures[id]);
 }
 
 GLuint TextureManager::getHandle(TextureID id) const {

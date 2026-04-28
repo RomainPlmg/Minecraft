@@ -13,6 +13,10 @@ Engine::Engine() {
         throw std::runtime_error(SDL_GetError());
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
     m_window = std::make_unique<Window>();
     m_renderer = std::make_unique<Renderer>(*m_window->context());
 
