@@ -31,7 +31,7 @@ GLContext::~GLContext() {
         if (!SDL_GL_DestroyContext(m_handle)) {
             LOG_CORE_ERROR("GLContext destroy failed: {}", SDL_GetError());
         } else {
-            LOG_CORE_DEBUG("GLContext destroy successfully!");
+            LOG_CORE_DEBUG("GLContext destroy successful!");
         }
         m_handle = nullptr;
     }

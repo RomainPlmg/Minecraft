@@ -7,10 +7,8 @@
 namespace opticrafter {
 
 Window::Window(const WindowSpecification& spec) {
-    m_handle =
-        SDL_CreateWindow(spec.title.c_str(), spec.width, spec.height,
-                         SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
-                             SDL_WINDOW_OPENGL);
+    m_handle = SDL_CreateWindow(spec.title.c_str(), spec.width, spec.height,
+                                SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL);
 
     if (!m_handle) {
         throw std::runtime_error(SDL_GetError());
@@ -31,5 +29,15 @@ Window::~Window() {
 }
 
 void Window::swapBuffers() const { SDL_GL_SwapWindow(m_handle); }
+
+Viewport Window::viewport() const {
+    int width, height;
+    SDL_GetWindowSize(m_handle, &width, &height);
+    if (width <= 0 || height <= 0) {
+        return Viewport{0, 0, 0, 0};
+    }
+
+    return Viewport{0, 0, (uint32_t)width, (uint32_t)height};
+}
 
 }  // namespace opticrafter

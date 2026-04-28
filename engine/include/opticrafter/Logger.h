@@ -3,11 +3,23 @@
 #include <spdlog/spdlog.h>
 
 namespace opticrafter {
+
+enum class LogLevel {
+    TRACE,
+    DEBUG,
+    INFO,
+    WARN,
+    ERROR,
+    CRITICAL,
+};
+
 class Logger {
    public:
     static void init();
     static spdlog::logger& getCoreLogger();
     static spdlog::logger& getAppLogger();
+    static void setCoreLoggerLevel(LogLevel level);
+    static void setAppLoggerLevel(LogLevel level);
 };
 
 }  // namespace opticrafter

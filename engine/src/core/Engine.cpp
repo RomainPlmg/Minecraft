@@ -1,6 +1,8 @@
 #include "opticrafter/Engine.h"
 
+#include "opticrafter/Layer.h"
 #include "opticrafter/Logger.h"
+#include "opticrafter/Timer.h"
 
 namespace opticrafter {
 
@@ -12,11 +14,13 @@ Engine::Engine() {
     }
 
     m_window = std::make_unique<Window>();
+    m_renderer = std::make_unique<Renderer>(*m_window->context());
 
     LOG_CORE_DEBUG("Engine init successful!");
 }
 
 Engine::~Engine() {
+    m_renderer.reset();
     m_window.reset();
     SDL_Quit();
     LOG_CORE_DEBUG("Engine destroy successful!");
@@ -25,12 +29,28 @@ Engine::~Engine() {
 
 void Engine::run() {
     bool running = true;
+    m_timer.reset();
 
     while (running) {
+        m_timer.update();
+        auto dt = m_timer.dt();
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) running = false;
         }
+
+        m_renderer->clear();
+
+        for (const auto& layer : m_layer_stack) {
+            layer->onUpdate(dt);
+        }
+
+        for (const auto& layer : m_layer_stack) {
+            layer->onRender();
+        }
+
+        m_layer_stack.processCommands();
 
         m_window->swapBuffers();
     }

@@ -6,11 +6,12 @@
 #include <string>
 
 #include "GLContext.h"
+#include "Utils.h"
 
 namespace opticrafter {
 
 struct WindowSpecification {
-    std::string title;
+    std::string title = "Minecraft";
     int width = 1280;
     int height = 720;
     bool vsync = true;
@@ -26,6 +27,8 @@ class Window {
     void swapBuffers() const;
 
     [[nodiscard]] SDL_Window* handle() const { return m_handle; }
+    [[nodiscard]] GLContext* context() const { return m_gl_ctx.get(); }
+    [[nodiscard]] Viewport viewport() const;
 
    private:
     WindowSpecification m_specification;
