@@ -23,6 +23,7 @@ Window::Window(const WindowSpecification& spec) {
 
 Window::~Window() {
     if (m_handle) {
+        m_gl_ctx.reset();
         SDL_DestroyWindow(m_handle);
         LOG_CORE_DEBUG("Window destroy successful!");
         m_handle = nullptr;
