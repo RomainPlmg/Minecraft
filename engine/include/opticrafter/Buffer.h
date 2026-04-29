@@ -21,7 +21,7 @@ class VertexBuffer {
 
 class IndexBuffer {
    public:
-    IndexBuffer(std::span<const std::byte> data);
+    IndexBuffer(std::span<const uint32_t> data);
     ~IndexBuffer();
     IndexBuffer(const IndexBuffer&) = delete;
     IndexBuffer& operator=(const IndexBuffer&) = delete;

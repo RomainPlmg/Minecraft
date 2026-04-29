@@ -7,6 +7,7 @@ file(GLOB_RECURSE APP_SRC
 
 add_executable(Minecraft ${APP_SRC})
 target_include_directories(Minecraft PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_compile_definitions(Minecraft PRIVATE -DASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets/")
 
 # ============================================================================
 # Dependencies

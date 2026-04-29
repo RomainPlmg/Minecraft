@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glad/gl.h>
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -15,14 +13,15 @@ using TextureID = uint32_t;
 class TextureManager {
    public:
     explicit TextureManager(const GLContext& ctx);
+    ~TextureManager();
 
     TextureID load(const std::string& path);
     void unload(TextureID id);
     void bind(TextureID id, uint32_t slot = 0);
-    GLuint getHandle(TextureID id) const;
+    uint32_t handle(TextureID id) const;
 
    private:
-    std::vector<GLuint> m_textures;
+    std::vector<uint32_t> m_textures;
 };
 
 }  // namespace opticrafter

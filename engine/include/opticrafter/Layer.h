@@ -14,7 +14,7 @@ class Layer {
 
     // virtual void onEvent(Event& event) = 0; -> TODO
 
-    virtual void onUpdate(double dt) = 0;
+    virtual void onUpdate(float dt) = 0;
     virtual void onRender() = 0;
 
     template <std::derived_from<Layer> T, typename... Args>

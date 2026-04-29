@@ -7,6 +7,7 @@
 #include "Layer.h"
 #include "LayerStack.h"
 #include "Logger.h"
+#include "Mesh.h"
 #include "Renderer.h"
 #include "Timer.h"
 #include "Utils.h"

@@ -23,7 +23,7 @@ class VertexArray {
 
     void bind() const;
     void unbind() const;
-    void setLayout(const VertexBuffer& vbo, std::span<VertexAttrib> attributes, size_t stride);
+    void setLayout(const VertexBuffer& vbo, std::span<const VertexAttrib> attributes, size_t stride);
 
    private:
     uint32_t m_id = 0;

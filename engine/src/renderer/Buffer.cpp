@@ -24,7 +24,7 @@ void VertexBuffer::unbind() const { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 // ============================================================================
 // Index buffer
 // ============================================================================
-IndexBuffer::IndexBuffer(std::span<const std::byte> data) {
+IndexBuffer::IndexBuffer(std::span<const uint32_t> data) {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size_bytes(), data.data(), GL_STATIC_DRAW);

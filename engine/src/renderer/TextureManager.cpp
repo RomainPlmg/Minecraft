@@ -3,6 +3,7 @@
 #include "opticrafter/Logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#include <glad/gl.h>
 #include <stb_image.h>
 
 namespace opticrafter {
@@ -26,6 +27,8 @@ static GLuint upload(int w, int h, const void* pixels) {
 TextureManager::TextureManager(const GLContext& ctx) {
     (void)ctx;  // Guard, need a valid context to build texture manager
 }
+
+TextureManager::~TextureManager() { glDeleteTextures(m_textures.size(), m_textures.data()); }
 
 TextureID TextureManager::load(const std::string& path) {
     int w, h, channels;
@@ -62,7 +65,7 @@ void TextureManager::bind(TextureID id, uint32_t slot) {
     glBindTexture(GL_TEXTURE_2D, m_textures[id]);
 }
 
-GLuint TextureManager::getHandle(TextureID id) const {
+GLuint TextureManager::handle(TextureID id) const {
     if (id >= m_textures.size()) {
         LOG_CORE_ERROR("Texture {} doesn't exists.");
         return 0;
