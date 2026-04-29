@@ -6,6 +6,7 @@
 namespace opticrafter {
 
 class VertexBuffer;
+class IndexBuffer;
 
 struct VertexAttrib {
     uint32_t index;
@@ -23,7 +24,7 @@ class VertexArray {
 
     void bind() const;
     void unbind() const;
-    void setLayout(const VertexBuffer& vbo, std::span<const VertexAttrib> attributes, size_t stride);
+    void setLayout(const VertexBuffer& vbo, const IndexBuffer& ebo, std::span<const VertexAttrib> attributes, size_t stride);
 
    private:
     uint32_t m_id = 0;

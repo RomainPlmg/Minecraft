@@ -9,7 +9,7 @@ struct Mesh {
     Mesh(std::span<const std::byte> vertices, std::span<const VertexAttrib> attributes, size_t stride,
          std::span<const uint32_t> indices)
         : vbo(vertices), ebo(indices) {
-        vao.setLayout(vbo, attributes, stride);
+        vao.setLayout(vbo, ebo, attributes, stride);
     }
 
     Mesh(const Mesh&) = delete;

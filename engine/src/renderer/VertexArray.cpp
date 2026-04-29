@@ -18,9 +18,11 @@ void VertexArray::bind() const { glBindVertexArray(m_id); }
 
 void VertexArray::unbind() const { glBindVertexArray(0); }
 
-void VertexArray::setLayout(const VertexBuffer& vbo, std::span<const VertexAttrib> attributes, size_t stride) {
+void VertexArray::setLayout(const VertexBuffer& vbo, const IndexBuffer& ebo, std::span<const VertexAttrib> attributes,
+                            size_t stride) {
     bind();
     vbo.bind();
+    ebo.bind();
 
     for (auto& a : attributes) {
         if (a.count > 4) {

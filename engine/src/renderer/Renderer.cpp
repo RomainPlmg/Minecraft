@@ -12,7 +12,11 @@ Renderer::Renderer(const GLContext& ctx) {
     m_texture_manager = std::make_unique<TextureManager>(ctx);
     m_shader_manager = std::make_unique<ShaderManager>(ctx);
 
-    setViewport({0, 0, 50, 50});
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+
+    setViewport({0, 0, 1280, 720});
     setClearColor({30, 30, 30, 255});
 
     LOG_CORE_DEBUG("Renderer init successful!");
@@ -42,8 +46,9 @@ void Renderer::setViewport(const Viewport& viewport) {
     glViewport(m_viewport.x, m_viewport.y, m_viewport.w, m_viewport.h);
 }
 
-void Renderer::draw(const Mesh& mesh, ShaderID id) {
-    m_shader_manager->bind(id);
+void Renderer::bindShader(ShaderID id) { m_shader_manager->bind(id); }
+
+void Renderer::draw(const Mesh& mesh) {
     mesh.vao.bind();
     glDrawElements(GL_TRIANGLES, mesh.ebo.count(), GL_UNSIGNED_INT, nullptr);
 }

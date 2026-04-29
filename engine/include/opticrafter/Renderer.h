@@ -24,7 +24,8 @@ class Renderer {
 
     void setClearColor(const Color& color);
     void setViewport(const Viewport& viewport);
-    void draw(const Mesh& mesh, ShaderID id);
+    void bindShader(ShaderID id);
+    void draw(const Mesh& mesh);
 
    private:
     Viewport m_viewport;

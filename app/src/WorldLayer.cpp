@@ -72,9 +72,10 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& re
     : opticrafter::Layer(stack), m_renderer(renderer) {
     m_cube_mesh =
         std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(cube_vert)), cube_attrib, sizeof(Vertex), cube_idx);
-    m_renderer.createShaderFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
+    auto id = m_renderer.createShaderFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
+    m_renderer.bindShader(id);
 }
 
 void WorldLayer::onUpdate(float dt) {}
 
-void WorldLayer::onRender() { m_renderer.draw(*m_cube_mesh, 0); }
+void WorldLayer::onRender() { m_renderer.draw(*m_cube_mesh); }
