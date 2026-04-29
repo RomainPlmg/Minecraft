@@ -24,12 +24,12 @@ class Logger {
 
 }  // namespace opticrafter
 
-#define LOG_TRACE(...) Logger::getAppLogger().trace(__VA_ARGS__)
-#define LOG_DEBUG(...) Logger::getAppLogger().debug(__VA_ARGS__)
-#define LOG_INFO(...) Logger::getAppLogger().info(__VA_ARGS__)
-#define LOG_WARN(...) Logger::getAppLogger().warn(__VA_ARGS__)
-#define LOG_ERROR(...) Logger::getAppLogger().error(__VA_ARGS__)
-#define LOG_CRITICAL(...) Logger::getAppLogger().critical(__VA_ARGS__)
+#define LOG_TRACE(...) opticrafter::Logger::getAppLogger().trace(__VA_ARGS__)
+#define LOG_DEBUG(...) opticrafter::Logger::getAppLogger().debug(__VA_ARGS__)
+#define LOG_INFO(...) opticrafter::Logger::getAppLogger().info(__VA_ARGS__)
+#define LOG_WARN(...) opticrafter::Logger::getAppLogger().warn(__VA_ARGS__)
+#define LOG_ERROR(...) opticrafter::Logger::getAppLogger().error(__VA_ARGS__)
+#define LOG_CRITICAL(...) opticrafter::Logger::getAppLogger().critical(__VA_ARGS__)
 
 #define LOG_CORE_TRACE(...) Logger::getCoreLogger().trace(__VA_ARGS__)
 #define LOG_CORE_DEBUG(...) Logger::getCoreLogger().debug(__VA_ARGS__)
