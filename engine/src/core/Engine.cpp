@@ -20,7 +20,7 @@ Engine::Engine() {
     m_window = std::make_unique<Window>();
     m_renderer = std::make_unique<Renderer>(*m_window->context());
 
-    LOG_CORE_DEBUG("Engine init successful!");
+    LOG_CORE_INFO("Engine init successful!");
 }
 
 Engine::~Engine() {

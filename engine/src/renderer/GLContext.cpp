@@ -19,9 +19,12 @@ GLContext::GLContext(const Window& window) {
     if (!SDL_GL_MakeCurrent(window.handle(), m_handle)) {
         throw std::runtime_error(SDL_GetError());
     }
-    if (!gladLoadGL(SDL_GL_GetProcAddress)) {
+
+    int version = gladLoadGL(SDL_GL_GetProcAddress);
+    if (!version) {
         throw std::runtime_error("Fail to load GLAD.");
     }
+    LOG_CORE_INFO("Loaded OpenGL {}.{}", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
     LOG_CORE_DEBUG("GLContext init successful!");
 }
