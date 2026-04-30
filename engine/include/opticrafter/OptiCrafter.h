@@ -10,6 +10,7 @@
 #include "Logger.h"
 #include "Mesh.h"
 #include "Renderer.h"
+#include "TextureAtlas.h"
 #include "Timer.h"
 #include "Utils.h"
 #include "VertexArray.h"

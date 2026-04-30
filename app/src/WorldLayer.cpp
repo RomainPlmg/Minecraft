@@ -69,10 +69,19 @@ static opticrafter::VertexAttrib cube_attrib[] = {
 };
 
 WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer)
-    : opticrafter::Layer(stack), m_renderer(renderer) {
+    : opticrafter::Layer(stack), m_atlas(32), m_renderer(renderer) {
     m_cube_mesh =
         std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(cube_vert)), cube_attrib, sizeof(Vertex), cube_idx);
     m_camera = std::make_unique<opticrafter::Camera>();
+
+    // Build the texture atlas
+    m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
+    m_atlas.add("dirt", ASSETS_DIR "textures/dirt.png");
+    m_atlas.add("grass_block_side", ASSETS_DIR "textures/grass_block_side.png");
+    m_atlas.add("grass_block_side_overlay", ASSETS_DIR "textures/grass_block_side_overlay.png");
+    m_atlas.add("grass_block_top", ASSETS_DIR "textures/grass_block_top.png");
+    m_atlas.build(renderer);
+
     renderer.createShaderFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
 }
 

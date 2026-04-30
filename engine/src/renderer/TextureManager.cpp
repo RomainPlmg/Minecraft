@@ -30,7 +30,7 @@ TextureManager::TextureManager(const GLContext& ctx) {
 
 TextureManager::~TextureManager() { glDeleteTextures(m_textures.size(), m_textures.data()); }
 
-TextureID TextureManager::load(const std::string& path) {
+TextureID TextureManager::loadFromFile(const std::string& path) {
     int w, h, channels;
     unsigned char* pixels = stbi_load(path.c_str(), &w, &h, &channels, 4);
     if (!pixels) {
@@ -41,7 +41,17 @@ TextureID TextureManager::load(const std::string& path) {
 
     m_textures.push_back(handle);
 
-    LOG_CORE_TRACE("Texture loaded: %s (%dx%d)", path, w, h);
+    LOG_CORE_TRACE("Texture loaded: {} ({}x{})", path, w, h);
+
+    return m_textures.size() - 1;
+}
+
+TextureID TextureManager::loadFromData(uint32_t width, uint32_t height, std::span<const std::byte> data) {
+    GLuint handle = upload(width, height, data.data());
+
+    m_textures.push_back(handle);
+
+    LOG_CORE_TRACE("Texture loaded from data ({}x{})", width, height);
 
     return m_textures.size() - 1;
 }

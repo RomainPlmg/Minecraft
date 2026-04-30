@@ -26,7 +26,8 @@ class Renderer {
 
     void clear();
 
-    TextureID createTexture(const std::string& path);
+    TextureID createTextureFromFile(const std::string& path);
+    TextureID createTextureFromData(uint32_t width, uint32_t height, std::span<const std::byte> data);
     ShaderID createShaderFromFile(const std::string& vsh_path, const std::string& fsh_path);
 
     void setClearColor(const Color& color);

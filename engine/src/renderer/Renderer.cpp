@@ -25,7 +25,11 @@ Renderer::Renderer(const GLContext& ctx) {
 
 Renderer::~Renderer() { LOG_CORE_DEBUG("Renderer destroy successful!"); }
 
-TextureID Renderer::createTexture(const std::string& path) { return m_texture_manager->load(path); }
+TextureID Renderer::createTextureFromFile(const std::string& path) { return m_texture_manager->loadFromFile(path); }
+
+TextureID Renderer::createTextureFromData(uint32_t width, uint32_t height, std::span<const std::byte> data) {
+    return m_texture_manager->loadFromData(width, height, data);
+}
 
 ShaderID Renderer::createShaderFromFile(const std::string& vsh_path, const std::string& fsh_path) {
     return m_shader_manager->loadFromFile(vsh_path, fsh_path);
