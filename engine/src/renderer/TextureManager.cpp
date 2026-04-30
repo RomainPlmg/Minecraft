@@ -32,6 +32,7 @@ TextureManager::~TextureManager() { glDeleteTextures(m_textures.size(), m_textur
 
 TextureID TextureManager::loadFromFile(const std::string& path) {
     int w, h, channels;
+    stbi_set_flip_vertically_on_load(true);
     unsigned char* pixels = stbi_load(path.c_str(), &w, &h, &channels, 4);
     if (!pixels) {
         LOG_CORE_ERROR("Failed to load texture '%s': %s", path, stbi_failure_reason());

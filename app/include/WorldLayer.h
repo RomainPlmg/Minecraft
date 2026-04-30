@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MeshBuilder.h"
 #include "opticrafter/OptiCrafter.h"
 
 class WorldLayer : public opticrafter::Layer {
@@ -10,7 +11,7 @@ class WorldLayer : public opticrafter::Layer {
     void onRender() override;
 
    private:
-    std::unique_ptr<opticrafter::Mesh> m_cube_mesh;
+    MeshBuilder m_mesh_builder;
     std::unique_ptr<opticrafter::Camera> m_camera;
     opticrafter::TextureAtlas m_atlas;
     opticrafter::Renderer& m_renderer;

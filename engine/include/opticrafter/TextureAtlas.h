@@ -22,6 +22,8 @@ class TextureAtlas {
 
     void add(const std::string& name, const std::string& path);
     void build(Renderer& renderer);
+    Region region(const std::string& name) const;
+    TextureID handle() const { return m_id; }
 
    private:
     TextureID m_id = 0;

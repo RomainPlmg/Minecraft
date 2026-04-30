@@ -26,10 +26,6 @@ class Renderer {
 
     void clear();
 
-    TextureID createTextureFromFile(const std::string& path);
-    TextureID createTextureFromData(uint32_t width, uint32_t height, std::span<const std::byte> data);
-    ShaderID createShaderFromFile(const std::string& vsh_path, const std::string& fsh_path);
-
     void setClearColor(const Color& color);
     void setViewport(const Viewport& viewport);
 
@@ -37,6 +33,8 @@ class Renderer {
     void draw(const Mesh& mesh, const Material& material, const glm::mat4& transform);
 
     Viewport viewport() const { return m_viewport; }
+    TextureManager* textures() const { return m_texture_manager.get(); }
+    ShaderManager* shaders() const { return m_shader_manager.get(); }
 
    private:
     Viewport m_viewport;

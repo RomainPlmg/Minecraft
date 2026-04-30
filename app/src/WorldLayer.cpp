@@ -1,78 +1,13 @@
 #include "WorldLayer.h"
 
-#include <glad/gl.h>
-
 #include <glm/glm.hpp>
-
-struct Vertex {
-    glm::vec3 pos;
-};
-
-static Vertex cube_vert[] = {
-    {{-1.f, -1.f, -1.0f}},  // bottom-left-front
-    {{1.f, -1.f, -1.0f}},   // bottom-right-front
-    {{1.f, 1.f, -1.0f}},    // top-right-front
-    {{-1.f, 1.f, -1.0f}},   // top-left-front
-    {{-1.f, -1.f, 1.0f}},   // bottom-left-back
-    {{1.f, -1.f, 1.0f}},    // bottom-right-back
-    {{1.f, 1.f, 1.0f}},     // top-right-back
-    {{-1.f, 1.f, 1.0f}},    // top-left-back
-};
-
-static uint32_t cube_idx[] = {
-    // Front
-    0,
-    1,
-    3,
-    1,
-    2,
-    3,
-    // Right
-    1,
-    5,
-    2,
-    5,
-    6,
-    2,
-    // Back
-    5,
-    4,
-    6,
-    4,
-    7,
-    6,
-    // Left
-    4,
-    0,
-    7,
-    0,
-    3,
-    7,
-    // Bottom
-    4,
-    5,
-    0,
-    5,
-    1,
-    0,
-    // Top
-    3,
-    2,
-    7,
-    2,
-    6,
-    7,
-};
-
-static opticrafter::VertexAttrib cube_attrib[] = {
-    {0, 3, GL_FLOAT, 0},
-};
 
 WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer)
     : opticrafter::Layer(stack), m_atlas(32), m_renderer(renderer) {
-    m_cube_mesh =
-        std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(cube_vert)), cube_attrib, sizeof(Vertex), cube_idx);
-    m_camera = std::make_unique<opticrafter::Camera>();
+    m_camera = std::make_unique<opticrafter::Camera>(glm::vec3(1.f, 0.f, 8.f));
+    m_mesh_builder.addCube({0, 0, 0});
+    m_mesh_builder.addCube({2, 0, 0});
+    m_mesh_builder.build();
 
     // Build the texture atlas
     m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
@@ -82,7 +17,7 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& re
     m_atlas.add("grass_block_top", ASSETS_DIR "textures/grass_block_top.png");
     m_atlas.build(renderer);
 
-    renderer.createShaderFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
+    renderer.shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
 }
 
 void WorldLayer::onUpdate(float dt) {
@@ -115,5 +50,6 @@ void WorldLayer::onUpdate(float dt) {
 
 void WorldLayer::onRender() {
     m_renderer.beginScene(*m_camera);
-    m_renderer.draw(*m_cube_mesh, opticrafter::Material{0}, glm::mat4{1.f});
+    m_renderer.textures()->bind(m_atlas.handle());
+    m_renderer.draw(*m_mesh_builder.mesh(), opticrafter::Material{0}, glm::mat4{1.f});
 }

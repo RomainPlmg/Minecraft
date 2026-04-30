@@ -43,11 +43,20 @@ void TextureAtlas::build(Renderer& renderer) {
         i++;
     }
 
-    m_id = renderer.createTextureFromData(atlas_w, atlas_h, std::as_bytes(std::span{buffer}));
+    m_id = renderer.textures()->loadFromData(atlas_w, atlas_h, std::as_bytes(std::span{buffer}));
+}
+
+Region TextureAtlas::region(const std::string& name) const {
+    if (!m_regions.contains(name)) {
+        LOG_CORE_ERROR("Unknown region '{}' in the current atlas.", name);
+        return {};
+    }
+    return m_regions.at(name);
 }
 
 void TextureAtlas::blit(std::span<uint8_t> dst, int dst_w, const std::string& path, const glm::ivec2& origin) {
     int w, h, channels;
+    stbi_set_flip_vertically_on_load(true);
     uint8_t* src = stbi_load(path.c_str(), &w, &h, &channels, 4);
     if (!src) {
         LOG_CORE_ERROR("Failed to load texture: {}", path);
