@@ -46,7 +46,7 @@ void TextureAtlas::build(Renderer& renderer) {
     m_id = renderer.textures()->loadFromData(atlas_w, atlas_h, std::as_bytes(std::span{buffer}));
 }
 
-Region TextureAtlas::region(const std::string& name) const {
+UVRegion TextureAtlas::region(const std::string& name) const {
     if (!m_regions.contains(name)) {
         LOG_CORE_ERROR("Unknown region '{}' in the current atlas.", name);
         return {};

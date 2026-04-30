@@ -11,7 +11,7 @@ class Renderer;
 
 using TextureID = uint32_t;
 
-struct Region {
+struct UVRegion {
     glm::vec2 uv_min;
     glm::vec2 uv_max;
 };
@@ -22,14 +22,14 @@ class TextureAtlas {
 
     void add(const std::string& name, const std::string& path);
     void build(Renderer& renderer);
-    Region region(const std::string& name) const;
+    UVRegion region(const std::string& name) const;
     TextureID handle() const { return m_id; }
 
    private:
     TextureID m_id = 0;
     uint32_t m_tile_size = 0;
     std::unordered_map<std::string, std::string> m_sources;
-    std::unordered_map<std::string, Region> m_regions;
+    std::unordered_map<std::string, UVRegion> m_regions;
 
     void blit(std::span<uint8_t> dst, int dst_w, const std::string& path, const glm::ivec2& origin);
 };

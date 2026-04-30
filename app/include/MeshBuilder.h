@@ -16,8 +16,8 @@ class MeshBuilder {
     enum class Face { Top, Bottom, Front, Back, Right, Left };
 
     void reset();
-    void addCube(const glm::vec3& pos);
-    void addCubeFace(const glm::vec3& pos, Face face);
+    void addCube(const glm::vec3& pos, const opticrafter::UVRegion& region);
+    void addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, Face face);
     void build();
 
     opticrafter::Mesh* mesh() const { return m_mesh.get(); }
