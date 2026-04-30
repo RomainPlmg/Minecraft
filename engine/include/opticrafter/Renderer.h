@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "Material.h"
 #include "Mesh.h"
 #include "ShaderManager.h"
 #include "TextureManager.h"
@@ -11,6 +12,12 @@
 namespace opticrafter {
 
 class GLContext;
+class Camera;
+
+struct SceneData {
+    glm::mat4 view{1.f};
+    glm::mat4 proj{1.f};
+};
 
 class Renderer {
    public:
@@ -24,14 +31,18 @@ class Renderer {
 
     void setClearColor(const Color& color);
     void setViewport(const Viewport& viewport);
-    void bindShader(ShaderID id);
-    void draw(const Mesh& mesh);
+
+    void beginScene(const Camera& camera);
+    void draw(const Mesh& mesh, const Material& material, const glm::mat4& transform);
+
+    Viewport viewport() const { return m_viewport; }
 
    private:
     Viewport m_viewport;
     Color m_clear_color;
     std::unique_ptr<TextureManager> m_texture_manager;
     std::unique_ptr<ShaderManager> m_shader_manager;
+    SceneData m_scene_data;
 };
 
 }  // namespace opticrafter

@@ -22,9 +22,9 @@ class ShaderManager {
 
     void setInt(ShaderID id, const std::string& name, int value);
     void setFloat(ShaderID id, const std::string& name, float value);
-    void setVec2(ShaderID id, const std::string& name, glm::vec2& value);
-    void setVec3(ShaderID id, const std::string& name, glm::vec3& value);
-    void setMat4(ShaderID id, const std::string& name, glm::mat4& value);
+    void setVec2(ShaderID id, const std::string& name, const glm::vec2& value);
+    void setVec3(ShaderID id, const std::string& name, const glm::vec3& value);
+    void setMat4(ShaderID id, const std::string& name, const glm::mat4& value);
 
    private:
     std::vector<uint32_t> m_shaders;

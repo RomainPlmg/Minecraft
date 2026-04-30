@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "Camera.h"
 #include "Engine.h"
 #include "EventBus.h"
 #include "Input.h"

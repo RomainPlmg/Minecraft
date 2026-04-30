@@ -159,7 +159,7 @@ void ShaderManager::setFloat(ShaderID id, const std::string& name, float value) 
     glProgramUniform1f(m_shaders[id], getUniform(m_shaders[id], name), value);
 }
 
-void ShaderManager::setVec2(ShaderID id, const std::string& name, glm::vec2& value) {
+void ShaderManager::setVec2(ShaderID id, const std::string& name, const glm::vec2& value) {
     if (id >= m_shaders.size() || m_shaders[id] == 0) {
         LOG_CORE_ERROR("No valid shader at id '{}'", id);
         return;
@@ -167,7 +167,7 @@ void ShaderManager::setVec2(ShaderID id, const std::string& name, glm::vec2& val
     glProgramUniform2fv(m_shaders[id], getUniform(m_shaders[id], name), 1, glm::value_ptr(value));
 }
 
-void ShaderManager::setVec3(ShaderID id, const std::string& name, glm::vec3& value) {
+void ShaderManager::setVec3(ShaderID id, const std::string& name, const glm::vec3& value) {
     if (id >= m_shaders.size() || m_shaders[id] == 0) {
         LOG_CORE_ERROR("No valid shader at id '{}'", id);
         return;
@@ -175,7 +175,7 @@ void ShaderManager::setVec3(ShaderID id, const std::string& name, glm::vec3& val
     glProgramUniform3fv(m_shaders[id], getUniform(m_shaders[id], name), 1, glm::value_ptr(value));
 }
 
-void ShaderManager::setMat4(ShaderID id, const std::string& name, glm::mat4& value) {
+void ShaderManager::setMat4(ShaderID id, const std::string& name, const glm::mat4& value) {
     if (id >= m_shaders.size() || m_shaders[id] == 0) {
         LOG_CORE_ERROR("No valid shader at id '{}'", id);
         return;

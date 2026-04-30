@@ -72,10 +72,39 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& re
     : opticrafter::Layer(stack), m_renderer(renderer) {
     m_cube_mesh =
         std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(cube_vert)), cube_attrib, sizeof(Vertex), cube_idx);
-    auto id = m_renderer.createShaderFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
-    m_renderer.bindShader(id);
+    m_camera = std::make_unique<opticrafter::Camera>();
+    renderer.createShaderFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
 }
 
-void WorldLayer::onUpdate(float dt) {}
+void WorldLayer::onUpdate(float dt) {
+    const glm::vec3 front_xz =
+        glm::normalize(glm::vec3(m_camera->getFrontVector().x, 0.0f, m_camera->getFrontVector().z));
+    const glm::vec3 right_xz =
+        glm::normalize(glm::vec3(m_camera->getRightVector().x, 0.0f, m_camera->getRightVector().z));
 
-void WorldLayer::onRender() { m_renderer.draw(*m_cube_mesh); }
+    glm::vec3 move_dir(0.0f);
+    if (opticrafter::Input::isKeyPressed(SDLK_Z)) move_dir += front_xz;
+    if (opticrafter::Input::isKeyPressed(SDLK_S)) move_dir -= front_xz;
+    if (opticrafter::Input::isKeyPressed(SDLK_Q)) move_dir -= right_xz;
+    if (opticrafter::Input::isKeyPressed(SDLK_D)) move_dir += right_xz;
+    if (opticrafter::Input::isKeyPressed(SDLK_SPACE)) move_dir.y += 1.f;
+    if (opticrafter::Input::isKeyPressed(SDLK_LSHIFT)) move_dir.y -= 1.f;
+
+    if (glm::length(move_dir) > 0.0f) {
+        move_dir = glm::normalize(move_dir);
+    }
+
+    m_camera->move(move_dir * 5.f * dt);
+
+    if (opticrafter::Input::isMouseButtonPressed(SDL_BUTTON_MIDDLE)) {
+        m_camera->freeze(false);
+    } else
+        m_camera->freeze(true);
+
+    m_camera->update();
+}
+
+void WorldLayer::onRender() {
+    m_renderer.beginScene(*m_camera);
+    m_renderer.draw(*m_cube_mesh, opticrafter::Material{0}, glm::mat4{1.f});
+}

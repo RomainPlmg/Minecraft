@@ -11,5 +11,6 @@ class WorldLayer : public opticrafter::Layer {
 
    private:
     std::unique_ptr<opticrafter::Mesh> m_cube_mesh;
+    std::unique_ptr<opticrafter::Camera> m_camera;
     opticrafter::Renderer& m_renderer;
 };

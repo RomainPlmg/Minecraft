@@ -2,6 +2,7 @@
 
 #include <glad/gl.h>
 
+#include "opticrafter/Camera.h"
 #include "opticrafter/Logger.h"
 
 namespace opticrafter {
@@ -46,9 +47,36 @@ void Renderer::setViewport(const Viewport& viewport) {
     glViewport(m_viewport.x, m_viewport.y, m_viewport.w, m_viewport.h);
 }
 
-void Renderer::bindShader(ShaderID id) { m_shader_manager->bind(id); }
+void Renderer::beginScene(const Camera& camera) {
+    m_scene_data.proj = camera.getProjection(m_viewport);
+    m_scene_data.view = camera.getView();
+}
 
-void Renderer::draw(const Mesh& mesh) {
+void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {
+    m_shader_manager->bind(material.id);
+    m_shader_manager->setMat4(material.id, "u_proj", m_scene_data.proj);
+    m_shader_manager->setMat4(material.id, "u_view", m_scene_data.view);
+    m_shader_manager->setMat4(material.id, "u_model", transform);
+
+    // Set uniforms for material
+    for (auto& [name, value] : material.uniforms) {
+        std::visit(
+            [&](auto&& v) {
+                using T = std::decay_t<decltype(v)>;
+                if constexpr (std::is_same_v<T, int>)
+                    m_shader_manager->setInt(material.id, name, v);
+                else if constexpr (std::is_same_v<T, float>)
+                    m_shader_manager->setFloat(material.id, name, v);
+                else if constexpr (std::is_same_v<T, glm::vec2>)
+                    m_shader_manager->setVec2(material.id, name, v);
+                else if constexpr (std::is_same_v<T, glm::vec3>)
+                    m_shader_manager->setVec3(material.id, name, v);
+                else if constexpr (std::is_same_v<T, glm::mat4>)
+                    m_shader_manager->setMat4(material.id, name, v);
+            },
+            value);
+    }
+
     mesh.vao.bind();
     glDrawElements(GL_TRIANGLES, mesh.ebo.count(), GL_UNSIGNED_INT, nullptr);
 }
