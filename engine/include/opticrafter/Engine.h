@@ -24,6 +24,7 @@ class Engine {
         m_layer_stack.pushLayer(std::make_unique<TLayer>(&m_layer_stack, std::forward<Args>(args)...));
     }
 
+    [[nodiscard]] Window* window() { return m_window.get(); }
     [[nodiscard]] Renderer* renderer() { return m_renderer.get(); }
     [[nodiscard]] EventBus* eventBus() { return &m_event_bus; }
 

@@ -30,6 +30,10 @@ Window::~Window() {
 
 void Window::swapBuffers() const { SDL_GL_SwapWindow(m_handle); }
 
+void Window::setVsync(int interval) {
+    SDL_GL_SetSwapInterval(interval);
+}
+
 Viewport Window::viewport() const {
     int width, height;
     SDL_GetWindowSize(m_handle, &width, &height);

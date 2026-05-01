@@ -10,6 +10,8 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& re
     renderer.shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
 }
 
+void WorldLayer::onEvent(SDL_Event& event) {}
+
 void WorldLayer::onUpdate(float dt) {
     m_world.update(dt);
 
@@ -40,6 +42,7 @@ void WorldLayer::onUpdate(float dt) {
     m_camera->update();
 }
 
-void WorldLayer::onRender() { 
+void WorldLayer::onRender() {
     m_renderer.beginScene(*m_camera);
-    m_world.render(); }
+    m_world.render();
+}

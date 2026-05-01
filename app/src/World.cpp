@@ -1,11 +1,12 @@
 #include "World.h"
 
+#include <tracy/Tracy.hpp>
+
 void World::init() {
     // Build the texture atlas
     m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
     m_atlas.add("dirt", ASSETS_DIR "textures/dirt.png");
     m_atlas.add("grass_block_side", ASSETS_DIR "textures/grass_block_side.png");
-    m_atlas.add("grass_block_side_overlay", ASSETS_DIR "textures/grass_block_side_overlay.png");
     m_atlas.add("grass_block_top", ASSETS_DIR "textures/grass_block_top.png");
     m_atlas.build(m_renderer);
 
@@ -28,6 +29,7 @@ void World::init() {
 void World::update(float dt) {}
 
 void World::render() {
+    ZoneScoped;
     m_renderer.textures()->bind(m_atlas.handle());
     m_renderer.draw(*m_chunk_mesher.mesh(), {0}, glm::mat4(1.0f));
 }

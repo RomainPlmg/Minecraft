@@ -1,7 +1,8 @@
 #pragma once
 
+#include <SDL3/SDL.h>
+
 #include <memory>
-#include <string>
 
 #include "Material.h"
 #include "Mesh.h"
@@ -17,6 +18,11 @@ class Camera;
 struct SceneData {
     glm::mat4 view{1.f};
     glm::mat4 proj{1.f};
+};
+
+struct RenderStats {
+    uint32_t draw_calls = 0;
+    uint32_t triangles = 0;
 };
 
 class Renderer {
@@ -35,6 +41,8 @@ class Renderer {
     Viewport viewport() const { return m_viewport; }
     TextureManager* textures() const { return m_texture_manager.get(); }
     ShaderManager* shaders() const { return m_shader_manager.get(); }
+    SDL_Window* nativeWindow() const;
+    RenderStats stats() const { return m_stats; }
 
    private:
     Viewport m_viewport;
@@ -42,6 +50,7 @@ class Renderer {
     std::unique_ptr<TextureManager> m_texture_manager;
     std::unique_ptr<ShaderManager> m_shader_manager;
     SceneData m_scene_data;
+    RenderStats m_stats;
 };
 
 }  // namespace opticrafter

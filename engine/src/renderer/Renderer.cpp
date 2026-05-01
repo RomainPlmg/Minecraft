@@ -42,6 +42,8 @@ void Renderer::setViewport(const Viewport& viewport) {
 }
 
 void Renderer::beginScene(const Camera& camera) {
+    m_stats.draw_calls = 0;
+    m_stats.triangles = 0;
     m_scene_data.proj = camera.getProjection(m_viewport);
     m_scene_data.view = camera.getView();
 }
@@ -73,6 +75,9 @@ void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4&
 
     mesh.vao.bind();
     glDrawElements(GL_TRIANGLES, mesh.ebo.count(), GL_UNSIGNED_INT, nullptr);
+
+    m_stats.draw_calls++;
+    m_stats.triangles = mesh.ebo.count() / 3;
 }
 
 }  // namespace opticrafter

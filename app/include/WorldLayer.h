@@ -7,6 +7,7 @@ class WorldLayer : public opticrafter::Layer {
    public:
     WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer);
 
+    void onEvent(SDL_Event& event) override;
     void onUpdate(float dt) override;
     void onRender() override;
 

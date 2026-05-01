@@ -25,6 +25,7 @@ class Window {
     Window& operator=(const Window&) = delete;
 
     void swapBuffers() const;
+    void setVsync(int interval);
 
     [[nodiscard]] SDL_Window* handle() const { return m_handle; }
     [[nodiscard]] GLContext* context() const { return m_gl_ctx.get(); }

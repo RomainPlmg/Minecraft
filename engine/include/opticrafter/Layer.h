@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL3/SDL.h>
+
 #include <concepts>
 #include <memory>
 
@@ -12,7 +14,7 @@ class Layer {
     Layer(LayerStack* stack);
     virtual ~Layer() = default;
 
-    // virtual void onEvent(Event& event) = 0; -> TODO
+    virtual void onEvent(SDL_Event& event) = 0;
 
     virtual void onUpdate(float dt) = 0;
     virtual void onRender() = 0;

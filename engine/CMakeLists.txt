@@ -12,6 +12,11 @@ add_library(opticrafter::opticrafter ALIAS opticrafter)
 target_include_directories(opticrafter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # ============================================================================
+# Options
+# ============================================================================
+option(TRACY_PROFILER "Enable Tracy profiler" ON)
+
+# ============================================================================
 # Dependencies
 # ============================================================================
 # OpenGL
@@ -46,6 +51,19 @@ FetchContent_Declare(
         GIT_TAG 1.0.3
 )
 FetchContent_MakeAvailable(glm)
+
+if(TRACY_PROFILER)
+        FetchContent_Declare(
+                tracy
+                GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+                GIT_TAG master
+                GIT_SHALLOW TRUE
+                GIT_PROGRESS TRUE
+        )
+        set(TRACY_ENABLE ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable (tracy)
+        target_link_libraries(opticrafter PUBLIC TracyClient)
+endif()
 
 target_link_libraries(opticrafter PUBLIC OpenGL::GL SDL3::SDL3 spdlog glad stb_image glm::glm)
 

@@ -1,5 +1,7 @@
 #include "opticrafter/Engine.h"
 
+#include <tracy/Tracy.hpp>
+
 #include "opticrafter/Layer.h"
 #include "opticrafter/Logger.h"
 #include "opticrafter/Timer.h"
@@ -42,6 +44,13 @@ void Engine::run() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) running = false;
+            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+                if (event.window.data1 >= 0 && event.window.data2 >= 0)
+                    m_renderer->setViewport({0, 0, (uint32_t)event.window.data1, (uint32_t)event.window.data2});
+            }
+            for (const auto& layer : m_layer_stack) {
+                layer->onEvent(event);
+            }
         }
         m_event_bus.pollEvents();
 
@@ -58,6 +67,8 @@ void Engine::run() {
         m_layer_stack.processCommands();
 
         m_window->swapBuffers();
+
+        FrameMark;
     }
 }
 
