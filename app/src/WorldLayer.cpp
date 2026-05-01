@@ -3,25 +3,16 @@
 #include <glm/glm.hpp>
 
 WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer)
-    : opticrafter::Layer(stack), m_atlas(32), m_renderer(renderer) {
-    m_camera = std::make_unique<opticrafter::Camera>(glm::vec3(1.f, 0.f, 8.f));
-
-    // Build the texture atlas
-    m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
-    m_atlas.add("dirt", ASSETS_DIR "textures/dirt.png");
-    m_atlas.add("grass_block_side", ASSETS_DIR "textures/grass_block_side.png");
-    m_atlas.add("grass_block_side_overlay", ASSETS_DIR "textures/grass_block_side_overlay.png");
-    m_atlas.add("grass_block_top", ASSETS_DIR "textures/grass_block_top.png");
-    m_atlas.build(renderer);
-
-    m_mesh_builder.addCube({0, 0, 0}, m_atlas.region("stone"));
-    m_mesh_builder.addCube({2, 0, 0}, m_atlas.region("dirt"));
-    m_mesh_builder.build();
+    : opticrafter::Layer(stack), m_world(renderer), m_renderer(renderer) {
+    m_camera = std::make_unique<opticrafter::Camera>(glm::vec3(0.f, 65.f, 0.f));
+    m_world.init();
 
     renderer.shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
 }
 
 void WorldLayer::onUpdate(float dt) {
+    m_world.update(dt);
+
     const glm::vec3 front_xz =
         glm::normalize(glm::vec3(m_camera->getFrontVector().x, 0.0f, m_camera->getFrontVector().z));
     const glm::vec3 right_xz =
@@ -49,8 +40,6 @@ void WorldLayer::onUpdate(float dt) {
     m_camera->update();
 }
 
-void WorldLayer::onRender() {
+void WorldLayer::onRender() { 
     m_renderer.beginScene(*m_camera);
-    m_renderer.textures()->bind(m_atlas.handle());
-    m_renderer.draw(*m_mesh_builder.mesh(), opticrafter::Material{0}, glm::mat4{1.f});
-}
+    m_world.render(); }

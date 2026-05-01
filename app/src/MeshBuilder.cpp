@@ -14,56 +14,6 @@ void MeshBuilder::reset() {
     m_indices.clear();
 }
 
-void MeshBuilder::addCube(const glm::vec3& pos, const opticrafter::UVRegion& region) {
-    // Top face (+Y)
-    addQuad({
-        Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_min.y}, {0, 1, 0}, 1.f},
-        Vertex{pos + glm::vec3(0, 1, 1), {region.uv_min.x, region.uv_max.y}, {0, 1, 0}, 1.f},
-        Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {0, 1, 0}, 1.f},
-        Vertex{pos + glm::vec3(1, 1, 0), {region.uv_max.x, region.uv_min.y}, {0, 1, 0}, 1.f},
-    });
-
-    // Bottom face (-Y)
-    addQuad({
-        Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {0, -1, 0}, .6f},
-        Vertex{pos + glm::vec3(1, 0, 0), {region.uv_max.x, region.uv_min.y}, {0, -1, 0}, .6f},
-        Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_max.y}, {0, -1, 0}, .6f},
-        Vertex{pos + glm::vec3(0, 0, 1), {region.uv_min.x, region.uv_max.y}, {0, -1, 0}, .6f},
-    });
-
-    // Front face (+Z)
-    addQuad({
-        Vertex{pos + glm::vec3(0, 0, 1), {region.uv_min.x, region.uv_min.y}, {0, 0, 1}, .8f},
-        Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_min.y}, {0, 0, 1}, .8f},
-        Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {0, 0, 1}, .8f},
-        Vertex{pos + glm::vec3(0, 1, 1), {region.uv_min.x, region.uv_max.y}, {0, 0, 1}, .8f},
-    });
-
-    // Back face (-Z)
-    addQuad({
-        Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {0, 0, -1}, .8f},
-        Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_max.y}, {0, 0, -1}, .8f},
-        Vertex{pos + glm::vec3(1, 1, 0), {region.uv_max.x, region.uv_max.y}, {0, 0, -1}, .8f},
-        Vertex{pos + glm::vec3(1, 0, 0), {region.uv_max.x, region.uv_min.y}, {0, 0, -1}, .8f},
-    });
-
-    // Right face (+X)
-    addQuad({
-        Vertex{pos + glm::vec3(1, 0, 0), {region.uv_min.x, region.uv_min.y}, {1, 0, 0}, .8f},
-        Vertex{pos + glm::vec3(1, 1, 0), {region.uv_min.x, region.uv_max.y}, {1, 0, 0}, .8f},
-        Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {1, 0, 0}, .8f},
-        Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_min.y}, {1, 0, 0}, .8f},
-    });
-
-    // Left face (-X)
-    addQuad({
-        Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {-1, 0, 0}, .8f},
-        Vertex{pos + glm::vec3(0, 0, 1), {region.uv_max.x, region.uv_min.y}, {-1, 0, 0}, .8f},
-        Vertex{pos + glm::vec3(0, 1, 1), {region.uv_max.x, region.uv_max.y}, {-1, 0, 0}, .8f},
-        Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_max.y}, {-1, 0, 0}, .8f},
-    });
-}
-
 void MeshBuilder::addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, Face face) {
     switch (face) {
         case Face::Top:
@@ -117,10 +67,9 @@ void MeshBuilder::addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion&
     }
 }
 
-void MeshBuilder::build() {
-    m_mesh.reset();
-    m_mesh = std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(m_vertices)), mesh_attrib, sizeof(Vertex),
-                                                 m_indices);
+std::unique_ptr<opticrafter::Mesh> MeshBuilder::build() {
+    return std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(m_vertices)), mesh_attrib, sizeof(Vertex),
+                                               m_indices);
 }
 
 void MeshBuilder::addQuad(const std::array<Vertex, 4>& vertices) {
