@@ -1,6 +1,7 @@
 #include "WorldLayer.h"
 
 #include <glm/glm.hpp>
+#include <tracy/Tracy.hpp>
 
 WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer)
     : opticrafter::Layer(stack), m_world(renderer), m_renderer(renderer) {
@@ -43,6 +44,7 @@ void WorldLayer::onUpdate(float dt) {
 }
 
 void WorldLayer::onRender() {
+    ZoneScoped;
     m_renderer.beginScene(*m_camera);
     m_world.render();
 }

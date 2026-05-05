@@ -2,6 +2,8 @@
 
 #include <glad/gl.h>
 
+#include <tracy/Tracy.hpp>
+
 #include "opticrafter/Camera.h"
 #include "opticrafter/Logger.h"
 
@@ -49,6 +51,7 @@ void Renderer::beginScene(const Camera& camera) {
 }
 
 void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {
+    ZoneScoped;
     // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     m_shader_manager->bind(material.id);
     m_shader_manager->setMat4(material.id, "u_proj", m_scene_data.proj);

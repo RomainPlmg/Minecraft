@@ -2,6 +2,9 @@
 
 #include <glad/gl.h>
 
+#include <tracy/Tracy.hpp>
+
+
 static opticrafter::VertexAttrib mesh_attrib[] = {
     {0, 3, GL_FLOAT, 0},
     {1, 2, GL_FLOAT, 3 * sizeof(float)},
@@ -68,6 +71,7 @@ void MeshBuilder::addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion&
 }
 
 std::unique_ptr<opticrafter::Mesh> MeshBuilder::build() {
+    ZoneScoped;
     return std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(m_vertices)), mesh_attrib, sizeof(Vertex),
                                                m_indices);
 }
