@@ -23,5 +23,5 @@ class BlockRegistry {
     const BlockDef& get(BlockType type) const;
 
    private:
-    std::unordered_map<BlockType, BlockDef> m_blocks;
+    std::array<BlockDef, 256> m_blocks;
 };
