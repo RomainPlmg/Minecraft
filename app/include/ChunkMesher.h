@@ -21,5 +21,5 @@ class ChunkMesher {
     MeshBuilder m_mesh_builder;
     std::unique_ptr<opticrafter::Mesh> m_mesh;
 
-    void buildFace(const Chunk& chunk, const glm::vec3 pos, MeshBuilder::Face face);
+    inline void buildFace(const Chunk& chunk, const glm::ivec3& pos, const BlockDef& block_def, MeshBuilder::Face face);
 };
