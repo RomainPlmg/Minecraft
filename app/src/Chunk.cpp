@@ -2,6 +2,12 @@
 
 Chunk::Chunk() { m_blocks.fill(BlockType::STONE); }
 
-BlockType Chunk::getBlock(uint8_t x, uint8_t y, uint8_t z) const { return m_blocks[index(x, y, z)]; }
+BlockType Chunk::getBlock(int x, int y, int z) const { return m_blocks[index(x, y, z)]; }
 
-void Chunk::setBlock(uint8_t x, uint8_t y, uint8_t z, BlockType type) { m_blocks[index(x, y, z)] = type; }
+void Chunk::setBlock(int x, int y, int z, BlockType type) { m_blocks[index(x, y, z)] = type; }
+
+bool Chunk::contains(int x, int y, int z) const {
+    return x >= 0 && x < CHUNK_WIDTH &&   // X
+           y >= 0 && y < CHUNK_HEIGHT &&  // Y
+           z >= 0 && z < CHUNK_WIDTH;     // Z
+}

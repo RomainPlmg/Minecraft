@@ -14,6 +14,7 @@ struct BlockDef {
     opticrafter::UVRegion top;
     opticrafter::UVRegion side;
     opticrafter::UVRegion bottom;
+    bool transparent;
 };
 
 class BlockRegistry {

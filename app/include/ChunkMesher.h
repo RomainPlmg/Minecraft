@@ -20,4 +20,6 @@ class ChunkMesher {
     const BlockRegistry& m_registry;
     MeshBuilder m_mesh_builder;
     std::unique_ptr<opticrafter::Mesh> m_mesh;
+
+    void buildFace(const Chunk& chunk, const glm::vec3 pos, MeshBuilder::Face face);
 };

@@ -6,13 +6,14 @@
 
 class Chunk {
    public:
-    static constexpr uint8_t CHUNK_WIDTH = 16;
-    static constexpr uint8_t CHUNK_HEIGHT = 64;
+    static constexpr uint32_t CHUNK_WIDTH = 16;
+    static constexpr uint32_t CHUNK_HEIGHT = 256;
 
     Chunk();
 
-    [[nodiscard]] BlockType getBlock(uint8_t x, uint8_t y, uint8_t z) const;
-    void setBlock(uint8_t x, uint8_t y, uint8_t z, BlockType type);
+    [[nodiscard]] BlockType getBlock(int x, int y, int z) const;
+    void setBlock(int x, int y, int z, BlockType type);
+    bool contains(int x, int y, int z) const;
 
     auto begin() const { return m_blocks.begin(); }
     auto end() const { return m_blocks.end(); }
@@ -20,5 +21,5 @@ class Chunk {
    private:
     std::array<BlockType, CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT> m_blocks;
 
-    size_t index(uint8_t x, uint8_t y, uint8_t z) const { return x + CHUNK_WIDTH * (y + CHUNK_WIDTH * z); }
+    size_t index(int x, int y, int z) const { return x + CHUNK_WIDTH * (y + CHUNK_WIDTH * z); }
 };

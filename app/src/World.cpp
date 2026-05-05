@@ -10,18 +10,27 @@ void World::init() {
     m_atlas.add("grass_block_top", ASSETS_DIR "textures/grass_block_top.png");
     m_atlas.build(m_renderer);
 
-    m_registry.registerBlock(BlockType::GRASS, {.name = "grass",
-                                                .top = m_atlas.region("grass_block_top"),
-                                                .side = m_atlas.region("grass_block_side"),
-                                                .bottom = m_atlas.region("dirt")});
-    m_registry.registerBlock(BlockType::DIRT, {.name = "dirt",
-                                               .top = m_atlas.region("dirt"),
-                                               .side = m_atlas.region("dirt"),
-                                               .bottom = m_atlas.region("dirt")});
-    m_registry.registerBlock(BlockType::STONE, {.name = "stone",
-                                                .top = m_atlas.region("stone"),
-                                                .side = m_atlas.region("stone"),
-                                                .bottom = m_atlas.region("stone")});
+    m_registry.registerBlock(BlockType::GRASS, {
+                                                   .name = "grass",
+                                                   .top = m_atlas.region("grass_block_top"),
+                                                   .side = m_atlas.region("grass_block_side"),
+                                                   .bottom = m_atlas.region("dirt"),
+                                                   .transparent = false,
+                                               });
+    m_registry.registerBlock(BlockType::DIRT, {
+                                                  .name = "dirt",
+                                                  .top = m_atlas.region("dirt"),
+                                                  .side = m_atlas.region("dirt"),
+                                                  .bottom = m_atlas.region("dirt"),
+                                                  .transparent = false,
+                                              });
+    m_registry.registerBlock(BlockType::STONE, {
+                                                   .name = "stone",
+                                                   .top = m_atlas.region("stone"),
+                                                   .side = m_atlas.region("stone"),
+                                                   .bottom = m_atlas.region("stone"),
+                                                   .transparent = false,
+                                               });
 
     m_chunk_mesher.build(m_chunk);
 }
