@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 
 #include <tracy/Tracy.hpp>
+#include <tracy/TracyOpenGL.hpp>
 
 #include "opticrafter/Camera.h"
 #include "opticrafter/Logger.h"
@@ -18,6 +19,7 @@ Renderer::Renderer(const GLContext& ctx) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     setViewport({0, 0, 1280, 720});
     setClearColor({30, 30, 30, 255});

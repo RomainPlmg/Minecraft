@@ -1,63 +1,59 @@
 #include "ChunkMesher.h"
 
+#include <glm/ext/matrix_transform.hpp>
 #include <tracy/Tracy.hpp>
 
 #include "Chunk.h"
+#include "ChunkGrid.h"
 
-void ChunkMesher::build(const Chunk& chunk) {
+ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
     ZoneScoped;
-    std::unique_ptr<opticrafter::Mesh> mesh;
-    for (size_t z = 0; z < Chunk::CHUNK_WIDTH; z++) {
-        for (size_t y = 0; y < Chunk::CHUNK_HEIGHT; y++) {
-            for (size_t x = 0; x < Chunk::CHUNK_WIDTH; x++) {
+    buildMeshInterior(chunk);
+    buildMeshExterior(chunk, grid);
+
+    return {m_mesh_builder.build(), glm::translate(glm::mat4(1.f), glm::vec3(chunk.coords().x << 4,
+                                                                             0, chunk.coords().y << 4))};
+}
+
+inline void ChunkMesher::buildMeshInterior(const Chunk& chunk) {
+    ZoneScoped;
+    for (size_t z = 1; z < Chunk::CHUNK_WIDTH - 1; z++) {
+        for (size_t y = 1; y < Chunk::CHUNK_HEIGHT - 1; y++) {
+            for (size_t x = 1; x < Chunk::CHUNK_WIDTH - 1; x++) {
                 auto& block_def = m_registry.get(chunk.getBlock(x, y, z));
-                buildFace(chunk, {x, y, z}, block_def, MeshBuilder::Face::Top);
-                buildFace(chunk, {x, y, z}, block_def, MeshBuilder::Face::Bottom);
-                buildFace(chunk, {x, y, z}, block_def, MeshBuilder::Face::Front);
-                buildFace(chunk, {x, y, z}, block_def, MeshBuilder::Face::Back);
-                buildFace(chunk, {x, y, z}, block_def, MeshBuilder::Face::Right);
-                buildFace(chunk, {x, y, z}, block_def, MeshBuilder::Face::Left);
+                // Top
+                if (m_registry.get(chunk.getBlock(x, y + 1, z)).transparent)
+                    m_mesh_builder.addCubeFace({x, y, z}, block_def.top, MeshBuilder::Face::Top);
+                // Bottom
+                if (m_registry.get(chunk.getBlock(x, y - 1, z)).transparent)
+                    m_mesh_builder.addCubeFace({x, y, z}, block_def.bottom, MeshBuilder::Face::Bottom);
+                // Front
+                if (m_registry.get(chunk.getBlock(x, y, z + 1)).transparent)
+                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                // Back
+                if (m_registry.get(chunk.getBlock(x, y, z - 1)).transparent)
+                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                // Right
+                if (m_registry.get(chunk.getBlock(x + 1, y, z)).transparent)
+                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                // Left
+                if (m_registry.get(chunk.getBlock(x - 1, y, z)).transparent)
+                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
             }
         }
     }
-
-    m_mesh = m_mesh_builder.build();
 }
 
-void ChunkMesher::buildFace(const Chunk& chunk, const glm::ivec3& pos, const BlockDef& block_def,
-                            MeshBuilder::Face face) {
-    glm::ivec3 neighbor_pos;
-    opticrafter::UVRegion region;
-    switch (face) {
-        case MeshBuilder::Face::Top:
-            neighbor_pos = {pos.x, pos.y + 1, pos.z};
-            region = block_def.top;
-            break;
-        case MeshBuilder::Face::Bottom:
-            neighbor_pos = {pos.x, pos.y - 1, pos.z};
-            region = block_def.bottom;
-            break;
-        case MeshBuilder::Face::Front:
-            neighbor_pos = {pos.x, pos.y, pos.z + 1};
-            region = block_def.side;
-            break;
-        case MeshBuilder::Face::Back:
-            neighbor_pos = {pos.x, pos.y, pos.z - 1};
-            region = block_def.side;
-            break;
-        case MeshBuilder::Face::Right:
-            neighbor_pos = {pos.x + 1, pos.y, pos.z};
-            region = block_def.side;
-            break;
-        case MeshBuilder::Face::Left:
-            neighbor_pos = {pos.x - 1, pos.y, pos.z};
-            region = block_def.side;
-            break;
+void ChunkMesher::buildMeshExterior(const Chunk& chunk, const ChunkGrid& grid) {
+    ZoneScoped;
+    // For y axis, always generates the top and bottom surface of the chunk
+    for (size_t z = 0; z < Chunk::CHUNK_WIDTH; z++) {
+        for (size_t x = 0; x < Chunk::CHUNK_WIDTH; x++) {
+            m_mesh_builder.addCubeFace({x, 0, z}, m_registry.get(chunk.getBlock(x, 0, z)).bottom,
+                                       MeshBuilder::Face::Bottom);
+            m_mesh_builder.addCubeFace({x, Chunk::CHUNK_HEIGHT - 1, z},
+                                       m_registry.get(chunk.getBlock(x, Chunk::CHUNK_HEIGHT - 1, z)).bottom,
+                                       MeshBuilder::Face::Top);
+        }
     }
-
-    if (chunk.contains(neighbor_pos.x, neighbor_pos.y, neighbor_pos.z)) {
-        auto neighbor_type = chunk.getBlock(neighbor_pos.x, neighbor_pos.y, neighbor_pos.z);
-        if (!m_registry.get(neighbor_type).transparent) return;  // If neighbor is opaque, don't generate the face
-    }
-    m_mesh_builder.addCubeFace({pos.x, pos.y, pos.z}, region, face);
 }

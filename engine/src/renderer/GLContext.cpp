@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 
 #include <stdexcept>
+#include <tracy/TracyOpenGL.hpp>
 
 #include "opticrafter/Logger.h"
 #include "opticrafter/Window.h"
@@ -25,6 +26,8 @@ GLContext::GLContext(const Window& window) {
         throw std::runtime_error("Fail to load GLAD.");
     }
     LOG_CORE_INFO("Loaded OpenGL {}.{}", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+
+    TracyGpuContext;
 
     LOG_CORE_DEBUG("GLContext init successful!");
 }

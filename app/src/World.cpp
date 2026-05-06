@@ -1,8 +1,12 @@
 #include "World.h"
 
+#include <glad/gl.h>
+
 #include <tracy/Tracy.hpp>
+#include <tracy/TracyOpenGL.hpp>
 
 void World::init() {
+    ZoneScoped;
     // Build the texture atlas
     m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
     m_atlas.add("dirt", ASSETS_DIR "textures/dirt.png");
@@ -31,14 +35,18 @@ void World::init() {
                                                    .bottom = m_atlas.region("stone"),
                                                    .transparent = false,
                                                });
-
-    m_chunk_mesher.build(m_chunk);
+    for (const auto& chunk : m_chunk_grid) {
+        m_chunk_render_data.push_back(m_chunk_mesher.build(*chunk, m_chunk_grid));
+    }
 }
 
 void World::update(float dt) {}
 
 void World::render() {
     ZoneScoped;
+    TracyGpuZone("Draw chunks");
     m_renderer.textures()->bind(m_atlas.handle());
-    m_renderer.draw(*m_chunk_mesher.mesh(), {0}, glm::mat4(1.0f));
+    for (const auto& data : m_chunk_render_data) {
+        m_renderer.draw(*data.mesh, {0}, data.transform);
+    }
 }

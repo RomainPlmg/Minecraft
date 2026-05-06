@@ -1,0 +1,19 @@
+#pragma once
+
+#include "Chunk.h"
+
+class ChunkGrid {
+   public:
+    ChunkGrid(uint8_t render_distance);
+
+    std::optional<BlockType> getBlock(const glm::ivec3 coord) const;
+
+    auto begin() const { return m_chunks.begin(); }
+    auto end() const { return m_chunks.end(); }
+
+   private:
+    int m_size = 0;                                // render_distance * 2 + 1
+    std::vector<std::unique_ptr<Chunk>> m_chunks;  // m_size * m_size
+
+    inline size_t index(int cx, int cz) const;
+};

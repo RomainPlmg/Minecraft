@@ -14,6 +14,7 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& re
 void WorldLayer::onEvent(SDL_Event& event) {}
 
 void WorldLayer::onUpdate(float dt) {
+    ZoneScoped;
     m_world.update(dt);
 
     const glm::vec3 front_xz =

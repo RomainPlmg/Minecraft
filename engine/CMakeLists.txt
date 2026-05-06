@@ -56,11 +56,12 @@ if(TRACY_PROFILER)
         FetchContent_Declare(
                 tracy
                 GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-                GIT_TAG master
+                GIT_TAG v0.13.1
                 GIT_SHALLOW TRUE
                 GIT_PROGRESS TRUE
         )
         set(TRACY_ENABLE ON CACHE BOOL "" FORCE)
+        set(TRACY_OPENGL ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable (tracy)
         target_link_libraries(opticrafter PUBLIC TracyClient)
 endif()

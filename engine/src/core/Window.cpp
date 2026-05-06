@@ -1,8 +1,12 @@
 #include "opticrafter/Window.h"
 
+#include <glad/gl.h>
+
 #include <stdexcept>
+#include <tracy/TracyOpenGL.hpp>
 
 #include "opticrafter/Logger.h"
+
 
 namespace opticrafter {
 
@@ -28,11 +32,12 @@ Window::~Window() {
     }
 }
 
-void Window::swapBuffers() const { SDL_GL_SwapWindow(m_handle); }
-
-void Window::setVsync(int interval) {
-    SDL_GL_SetSwapInterval(interval);
+void Window::swapBuffers() const {
+    TracyGpuCollect;
+    SDL_GL_SwapWindow(m_handle);
 }
+
+void Window::setVsync(int interval) { SDL_GL_SetSwapInterval(interval); }
 
 Viewport Window::viewport() const {
     int width, height;

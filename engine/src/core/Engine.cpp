@@ -42,20 +42,26 @@ void Engine::run() {
         m_timer.update();
         auto dt = m_timer.dt();
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) running = false;
-            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-                if (event.window.data1 >= 0 && event.window.data2 >= 0)
-                    m_renderer->setViewport({0, 0, (uint32_t)event.window.data1, (uint32_t)event.window.data2});
+        {
+            ZoneScopedN("PollEvents");
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_EVENT_QUIT) running = false;
+                if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+                    if (event.window.data1 >= 0 && event.window.data2 >= 0)
+                        m_renderer->setViewport({0, 0, (uint32_t)event.window.data1, (uint32_t)event.window.data2});
+                }
+                for (const auto& layer : m_layer_stack) {
+                    layer->onEvent(event);
+                }
             }
-            for (const auto& layer : m_layer_stack) {
-                layer->onEvent(event);
-            }
+            m_event_bus.pollEvents();
         }
-        m_event_bus.pollEvents();
 
-        m_renderer->clear();
+        {
+            ZoneScopedN("Clear");
+            m_renderer->clear();
+        }
 
         for (const auto& layer : m_layer_stack) {
             layer->onUpdate(dt);
@@ -65,9 +71,15 @@ void Engine::run() {
             layer->onRender();
         }
 
-        m_layer_stack.processCommands();
+        {
+            ZoneScopedN("ProcessCommands");
+            m_layer_stack.processCommands();
+        }
 
-        m_window->swapBuffers();
+        {
+            ZoneScopedN("SwapBuffers");
+            m_window->swapBuffers();
+        }
 
         FrameMark;
     }

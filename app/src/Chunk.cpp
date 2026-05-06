@@ -1,6 +1,6 @@
 #include "Chunk.h"
 
-Chunk::Chunk() { m_blocks.fill(BlockType::STONE); }
+Chunk::Chunk(int cx, int cz) : m_coords(cx, cz) { m_blocks.fill(BlockType::STONE); }
 
 BlockType Chunk::getBlock(int x, int y, int z) const { return m_blocks[index(x, y, z)]; }
 
