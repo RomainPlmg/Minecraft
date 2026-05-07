@@ -8,7 +8,7 @@
 class World {
    public:
     World(opticrafter::Renderer& renderer)
-        : m_renderer(renderer), m_atlas(32), m_chunk_grid(4), m_chunk_mesher(m_atlas, m_registry) {}
+        : m_renderer(renderer), m_atlas(32), m_chunk_grid(2), m_chunk_mesher(m_atlas, m_registry) {}
 
     void init();
     void update(float dt);

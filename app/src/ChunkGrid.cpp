@@ -13,15 +13,16 @@ ChunkGrid::ChunkGrid(uint8_t render_distance, glm::ivec2 origin) : m_origin(orig
 
 std::optional<BlockType> ChunkGrid::getBlock(const glm::ivec3 coord) const {
     // Outside vertical limits
-    if (coord.y < 0 || coord.y >= (int)Chunk::CHUNK_HEIGHT) {
+    if (coord.y < 0 || coord.y >= Chunk::CHUNK_HEIGHT) {
         return std::nullopt;
     }
 
     // Calculate chunk position
-    int cx = coord.x >> 4;
-    int cz = coord.z >> 4;
+    int cx = std::floor(coord.x / (float)Chunk::CHUNK_WIDTH);
+    int cz = std::floor(coord.z / (float)Chunk::CHUNK_WIDTH);
 
-    assert(isInBounds(cx, cz));
+    if (!isInBounds(cx, cz)) return std::nullopt;
+
     auto idx = index(cx, cz);
 
     // Local coordinates in the chunk
@@ -33,7 +34,7 @@ std::optional<BlockType> ChunkGrid::getBlock(const glm::ivec3 coord) const {
 
 bool ChunkGrid::isInBounds(int cx, int cz) const {
     int render_distance = (m_size - 1) / 2;
-    return cx >= -render_distance && cx <= render_distance && cz >= render_distance && cz <= render_distance;
+    return cx >= -render_distance && cx <= render_distance && cz >= -render_distance && cz <= render_distance;
 }
 
 size_t ChunkGrid::index(int cx, int cz) const {

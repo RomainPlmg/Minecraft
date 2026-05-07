@@ -15,10 +15,6 @@ void World::init() {
     m_atlas.add("copper_block", ASSETS_DIR "textures/copper_block.png");
     m_atlas.build(m_renderer);
 
-    m_registry.registerBlock(BlockType::AIR, {
-                                                 .name = "air",
-                                                 .transparent = true,
-                                             });
     m_registry.registerBlock(BlockType::GRASS, {
                                                    .name = "grass",
                                                    .top = m_atlas.region("grass_block_top"),
@@ -47,9 +43,14 @@ void World::init() {
                                                           .bottom = m_atlas.region("copper_block"),
                                                           .transparent = false,
                                                       });
-    for (const auto& chunk : m_chunk_grid) {
-        m_chunk_render_data.push_back(m_chunk_mesher.build(*chunk, m_chunk_grid));
-    }
+
+    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[0], m_chunk_grid));
+    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[1], m_chunk_grid));
+    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[2], m_chunk_grid));
+    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[3], m_chunk_grid));
+    // for (const auto& chunk : m_chunk_grid) {
+    //     m_chunk_render_data.push_back(m_chunk_mesher.build(*chunk, m_chunk_grid));
+    // }
 }
 
 void World::update(float dt) {}

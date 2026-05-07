@@ -24,7 +24,4 @@ class ChunkMesher {
     const opticrafter::TextureAtlas& m_atlas;
     const BlockRegistry& m_registry;
     MeshBuilder m_mesh_builder;
-
-    inline void buildMeshInterior(const Chunk& chunk);
-    inline void buildMeshExterior(const Chunk& chunk, const ChunkGrid& grid);
 };

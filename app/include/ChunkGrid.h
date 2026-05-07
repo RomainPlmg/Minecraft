@@ -11,6 +11,7 @@ class ChunkGrid {
 
     auto begin() const { return m_chunks.begin(); }
     auto end() const { return m_chunks.end(); }
+    Chunk* operator[](size_t index) { return m_chunks[index].get(); }
 
    private:
     glm::ivec2 m_origin;

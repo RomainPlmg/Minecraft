@@ -6,8 +6,8 @@
 
 class Chunk {
    public:
-    static constexpr uint32_t CHUNK_WIDTH = 16;
-    static constexpr uint32_t CHUNK_HEIGHT = 256;
+    static constexpr int CHUNK_WIDTH = 3;
+    static constexpr int CHUNK_HEIGHT = 3;
 
     Chunk(int cx, int cz);
 
@@ -23,5 +23,5 @@ class Chunk {
     std::array<BlockType, CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT> m_blocks;
     glm::ivec2 m_coords;
 
-    size_t index(int x, int y, int z) const { return x + CHUNK_WIDTH * (y + CHUNK_HEIGHT * z); }
+    size_t index(int x, int y, int z) const { return x + CHUNK_WIDTH * y + CHUNK_WIDTH * CHUNK_HEIGHT * z; }
 };

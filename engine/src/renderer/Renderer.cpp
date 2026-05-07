@@ -19,7 +19,7 @@ Renderer::Renderer(const GLContext& ctx) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     setViewport({0, 0, 1280, 720});
     setClearColor({30, 30, 30, 255});
@@ -54,7 +54,7 @@ void Renderer::beginScene(const Camera& camera) {
 
 void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {
     ZoneScoped;
-    // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     m_shader_manager->bind(material.id);
     m_shader_manager->setMat4(material.id, "u_proj", m_scene_data.proj);
     m_shader_manager->setMat4(material.id, "u_view", m_scene_data.view);
