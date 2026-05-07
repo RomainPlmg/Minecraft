@@ -3,10 +3,11 @@
 #include "opticrafter/OptiCrafter.h"
 
 enum class BlockType : uint8_t {
-    UNKNOWN,
+    AIR,
     GRASS,
     DIRT,
     STONE,
+    COPPER_BLOCK,
 };
 
 struct BlockDef {
