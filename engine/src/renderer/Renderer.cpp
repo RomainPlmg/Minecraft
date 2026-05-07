@@ -48,8 +48,8 @@ void Renderer::setViewport(const Viewport& viewport) {
 void Renderer::beginScene(const Camera& camera) {
     m_stats.draw_calls = 0;
     m_stats.triangles = 0;
-    m_scene_data.proj = camera.getProjection(m_viewport);
-    m_scene_data.view = camera.getView();
+    m_scene_data.proj = camera.projection(m_viewport);
+    m_scene_data.view = camera.view();
 }
 
 void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {

@@ -42,11 +42,13 @@ void World::init() {
 
 void World::update(float dt) {}
 
-void World::render() {
+void World::render(const opticrafter::Frustum& frustum) {
     ZoneScoped;
     TracyGpuZone("Draw chunks");
     m_renderer.textures()->bind(m_atlas.handle());
     for (const auto& data : m_chunk_render_data) {
+        if (!frustum.intersects(data.aabb)) continue;
+
         m_renderer.draw(*data.mesh, {0}, data.transform);
     }
 }

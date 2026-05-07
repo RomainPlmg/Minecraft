@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "Frustum.h"
 #include "opticrafter/Utils.h"
 
 namespace opticrafter {
@@ -19,15 +20,16 @@ class Camera {
     Camera(glm::vec3 position = glm::vec3(0.f, 0.f, 0.f), glm::vec3 up = glm::vec3(0.f, 1.f, 0.f),
            float yaw = CAMERA_YAW, float pitch = CAMERA_PITCH);
 
-    glm::mat4 getProjection(const Viewport& viewport) const;
-    glm::mat4 getView() const;
-    glm::vec3 getFrontVector() const { return m_front; }
-    glm::vec3 getRightVector() const { return m_right; }
-    glm::vec3 getPosition() const;
+    glm::mat4 projection(const Viewport& viewport) const;
+    glm::mat4 view() const;
+    glm::vec3 frontVector() const { return m_front; }
+    glm::vec3 rightVector() const { return m_right; }
+    glm::vec3 position() const;
+    const Frustum& frustum() const { return m_frustum; }
 
     void setPosition(glm::vec3 position) { m_position = position; }
     void move(glm::vec3 movement) { m_position += movement; }
-    void update();
+    void update(const Viewport& viewport);
     void freeze(bool freeze) { m_freeze = freeze; }
 
    private:
@@ -51,6 +53,9 @@ class Camera {
     float m_fov = 45.f;
     float m_near = 0.1f, m_far = 100.f;
     bool m_freeze = false;
+
+    // Frustum
+    Frustum m_frustum;
 };
 
 }  // namespace opticrafter

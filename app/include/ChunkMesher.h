@@ -9,6 +9,7 @@ class ChunkGrid;
 
 struct ChunkRenderData {
     std::unique_ptr<opticrafter::Mesh> mesh;
+    opticrafter::AABB aabb;
     glm::mat4 transform;
 };
 

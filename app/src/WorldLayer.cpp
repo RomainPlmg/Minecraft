@@ -17,10 +17,8 @@ void WorldLayer::onUpdate(float dt) {
     ZoneScoped;
     m_world.update(dt);
 
-    const glm::vec3 front_xz =
-        glm::normalize(glm::vec3(m_camera->getFrontVector().x, 0.0f, m_camera->getFrontVector().z));
-    const glm::vec3 right_xz =
-        glm::normalize(glm::vec3(m_camera->getRightVector().x, 0.0f, m_camera->getRightVector().z));
+    const glm::vec3 front_xz = glm::normalize(glm::vec3(m_camera->frontVector().x, 0.0f, m_camera->frontVector().z));
+    const glm::vec3 right_xz = glm::normalize(glm::vec3(m_camera->rightVector().x, 0.0f, m_camera->rightVector().z));
 
     glm::vec3 move_dir(0.0f);
     if (opticrafter::Input::isKeyPressed(SDLK_W)) move_dir += front_xz;
@@ -41,11 +39,11 @@ void WorldLayer::onUpdate(float dt) {
     } else
         m_camera->freeze(true);
 
-    m_camera->update();
+    m_camera->update(m_renderer.viewport());
 }
 
 void WorldLayer::onRender() {
     ZoneScoped;
     m_renderer.beginScene(*m_camera);
-    m_world.render();
+    m_world.render(m_camera->frustum());
 }

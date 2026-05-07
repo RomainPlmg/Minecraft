@@ -18,16 +18,16 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) {
     updateCameraVector();
 }
 
-glm::mat4 Camera::getProjection(const Viewport& viewport) const {
+glm::mat4 Camera::projection(const Viewport& viewport) const {
     float aspect = static_cast<float>(viewport.w) / static_cast<float>(viewport.h);
     return glm::perspective(glm::radians(m_fov), aspect, m_near, m_far);
 }
 
-glm::mat4 Camera::getView() const { return glm::lookAt(m_position, m_position + m_front, m_up); }
+glm::mat4 Camera::view() const { return glm::lookAt(m_position, m_position + m_front, m_up); }
 
-glm::vec3 Camera::getPosition() const { return m_position; }
+glm::vec3 Camera::position() const { return m_position; }
 
-void Camera::update() {
+void Camera::update(const Viewport& viewport) {
     glm::vec2 mouse_pos;
     Input::getMousePosition(&mouse_pos.x, &mouse_pos.y);
     auto mouse_offset = m_last_mouse_pos - mouse_pos;
@@ -45,6 +45,7 @@ void Camera::update() {
         // Update Front, Right and Up Vectors using the updated Euler angles
         updateCameraVector();
     }
+    m_frustum.update(projection(viewport) * view());
 
     m_last_mouse_pos = mouse_pos;
 }

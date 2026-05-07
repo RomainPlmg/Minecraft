@@ -11,8 +11,15 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
     buildMeshInterior(chunk);
     buildMeshExterior(chunk, grid);
 
-    return {m_mesh_builder.build(), glm::translate(glm::mat4(1.f), glm::vec3(chunk.coords().x << 4,
-                                                                             0, chunk.coords().y << 4))};
+    auto coords = chunk.coords();
+    glm::vec3 world_pos = {coords.x * (int)Chunk::CHUNK_WIDTH, 0, coords.y * (int)Chunk::CHUNK_WIDTH};
+
+    return {
+        m_mesh_builder.build(),
+        opticrafter::AABB(world_pos,
+                          world_pos + glm::vec3(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, Chunk::CHUNK_WIDTH)),
+        glm::translate(glm::mat4(1.f), world_pos),
+    };
 }
 
 inline void ChunkMesher::buildMeshInterior(const Chunk& chunk) {

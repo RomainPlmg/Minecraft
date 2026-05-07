@@ -12,7 +12,7 @@ class World {
 
     void init();
     void update(float dt);
-    void render();
+    void render(const opticrafter::Frustum& frustum);
 
    private:
     opticrafter::Renderer& m_renderer;
