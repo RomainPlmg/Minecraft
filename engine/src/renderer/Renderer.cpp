@@ -55,7 +55,7 @@ void Renderer::beginScene(const Camera& camera) {
 }
 
 void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {
-    ZoneScoped;
+    ZoneScopedN("RendererDraw");
     GLuint query;
     glGenQueries(1, &query);
     glBeginQuery(GL_PRIMITIVES_GENERATED, query);

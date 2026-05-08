@@ -6,7 +6,7 @@
 #include <tracy/TracyOpenGL.hpp>
 
 void World::init() {
-    ZoneScoped;
+    ZoneScopedN("WorldInit");
 
     // Build the texture atlas
     m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
@@ -56,7 +56,7 @@ void World::init() {
 void World::update(float dt) {}
 
 void World::render(const opticrafter::Frustum& frustum) {
-    ZoneScoped;
+    ZoneScopedN("WorldRender");
     TracyGpuZone("Draw chunks");
     for (const auto& data : m_chunk_render_data) {
         if (!frustum.intersects(data.aabb)) continue;

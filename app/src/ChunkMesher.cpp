@@ -9,7 +9,7 @@
 void ChunkMesher::reset() { m_mesh_builder.reset(); }
 
 ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
-    ZoneScoped;
+    ZoneScopedN("ChunkMesherBuild");
     m_mesh_builder.reset();
 
     auto coords = chunk.coords();

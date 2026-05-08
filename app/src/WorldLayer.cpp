@@ -14,7 +14,7 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& re
 void WorldLayer::onEvent(SDL_Event& event) {}
 
 void WorldLayer::onUpdate(float dt) {
-    ZoneScoped;
+    ZoneScopedN("WorldLayerUpdate");
     m_world.update(dt);
 
     const glm::vec3 front_xz = glm::normalize(glm::vec3(m_camera->frontVector().x, 0.0f, m_camera->frontVector().z));
@@ -43,7 +43,7 @@ void WorldLayer::onUpdate(float dt) {
 }
 
 void WorldLayer::onRender() {
-    ZoneScoped;
+    ZoneScopedN("WorldLayerRender");
     m_renderer.beginScene(*m_camera);
     m_world.render(m_camera->frustum());
 }

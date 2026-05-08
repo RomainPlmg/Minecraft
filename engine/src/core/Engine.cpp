@@ -38,7 +38,7 @@ void Engine::run() {
     m_timer.reset();
 
     while (running) {
-        ZoneScoped;
+        ZoneScopedN("MainLoop");
         m_timer.update();
         auto dt = m_timer.dt();
 
