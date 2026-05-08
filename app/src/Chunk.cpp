@@ -2,6 +2,7 @@
 
 Chunk::Chunk(int cx, int cz) : m_coords(cx, cz) {
     m_blocks.fill(BlockType::COPPER_BLOCK);
+    m_state = ChunkState::Generated;
 }
 
 std::optional<BlockType> Chunk::getBlock(int x, int y, int z) const {

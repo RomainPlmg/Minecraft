@@ -1,14 +1,8 @@
 #include "ChunkGrid.h"
 
-ChunkGrid::ChunkGrid(uint8_t render_distance, glm::ivec2 origin) : m_origin(origin), m_size(render_distance * 2 + 1) {
-    m_chunks.resize(m_size * m_size);
-
-    for (int z = -render_distance; z <= render_distance; z++) {
-        for (int x = -render_distance; x <= render_distance; x++) {
-            auto i = index(x, z);
-            m_chunks[i] = std::make_unique<Chunk>(x, z);
-        }
-    }
+ChunkGrid::ChunkGrid(uint8_t render_distance, int ox, int oz)
+    : m_ox(0xFFFF), m_oz(0xFFFF), m_size(render_distance * 2 + 1), m_chunks(m_size) {
+    setOrigin(ox, oz);
 }
 
 Chunk* ChunkGrid::getChunk(int cx, int cz) const {
@@ -16,17 +10,64 @@ Chunk* ChunkGrid::getChunk(int cx, int cz) const {
         return nullptr;
     }
 
-    return m_chunks[index(cx, cz)].get();
+    return m_chunks.get(cx, cz).get();
 }
 
 bool ChunkGrid::isInBounds(int cx, int cz) const {
-    int render_distance = (m_size - 1) / 2;
-    return cx >= -render_distance && cx <= render_distance && cz >= -render_distance && cz <= render_distance;
+    int half = m_size / 2;
+    return cx >= m_ox - half && cx <= m_ox + half && cz >= m_oz - half && cz <= m_oz + half;
 }
 
-size_t ChunkGrid::index(int cx, int cz) const {
-    int half = m_size / 2;
-    int x = cx + half;
-    int z = cz + half;
-    return x + z * m_size;
+void ChunkGrid::setOrigin(int ox, int oz) {
+    if (ox == m_ox && oz == m_oz) return;
+
+    int rd = (m_size - 1) / 2;
+
+    // Check what is outside the new world window
+    for (int z = m_oz - rd; z <= m_oz + rd; ++z) {
+        for (int x = m_ox - rd; x <= m_ox + rd; ++x) {
+            // If old coord is outside the new world window
+            if (x < ox - rd || x > ox + rd || z < oz - rd || z > oz + rd) {
+                // Remove the chunk
+                m_chunks.get(x, z).reset();
+            }
+        }
+    }
+
+    // Update origin
+    m_ox = ox;
+    m_oz = oz;
+
+    // Fill new chunks
+    for (int z = m_oz - rd; z <= m_oz + rd; ++z) {
+        for (int x = m_ox - rd; x <= m_ox + rd; ++x) {
+            auto& slot = m_chunks.get(x, z);
+
+            if (!slot || slot->coords().x != x || slot->coords().y != z) {
+                slot = std::make_unique<Chunk>(x, z);
+                slot->setState(ChunkState::Dirty);
+
+                // Invalidates neighbors
+                auto* neighbor = getChunk(x, z + 1);
+                if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                    neighbor->setState(ChunkState::Dirty);
+                }
+
+                neighbor = getChunk(x, z - 1);
+                if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                    neighbor->setState(ChunkState::Dirty);
+                }
+
+                neighbor = getChunk(x + 1, z);
+                if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                    neighbor->setState(ChunkState::Dirty);
+                }
+
+                neighbor = getChunk(x - 1, z);
+                if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                    neighbor->setState(ChunkState::Dirty);
+                }
+            }
+        }
+    }
 }

@@ -5,6 +5,13 @@
 #include <tracy/Tracy.hpp>
 #include <tracy/TracyOpenGL.hpp>
 
+World::World(opticrafter::Renderer& renderer)
+    : m_renderer(renderer),
+      m_atlas(32),
+      m_chunk_grid(m_render_distance),
+      m_chunk_mesher(m_atlas, m_registry),
+      m_chunk_render_data(m_render_distance * 2 + 1) {}
+
 void World::init() {
     ZoneScopedN("WorldInit");
 
@@ -44,23 +51,44 @@ void World::init() {
                                                           .bottom = m_atlas.region("copper_block"),
                                                           .transparent = false,
                                                       });
-
     for (const auto& chunk : m_chunk_grid) {
-        m_chunk_mesher.reset();
-        m_chunk_render_data.push_back(m_chunk_mesher.build(*chunk, m_chunk_grid));
+        auto coords = chunk->coords();
+        m_chunk_render_data.set(coords.x, coords.y, m_chunk_mesher.build(*chunk, m_chunk_grid));
     }
-
-    m_renderer.textures()->bind(m_atlas.handle());
 }
 
-void World::update(float dt) {}
+void World::update(float dt, const glm::vec3& pos) {
+    m_chunk_grid.setOrigin(std::floor(pos.x / (float)Chunk::CHUNK_WIDTH),
+                           std::floor(pos.z / (float)Chunk::CHUNK_WIDTH));
+
+    for (auto& chunk : m_chunk_grid) {
+        if (chunk->state() == ChunkState::Dirty) {
+            auto coords = chunk->coords();
+
+            // On génère le mesh
+            auto meshData = m_chunk_mesher.build(*chunk, m_chunk_grid);
+
+            // On l'envoie au renderer
+            m_chunk_render_data.set(coords.x, coords.y, std::move(meshData));
+
+            // IMPORTANT : On retire le flag dirty
+            chunk->setState(ChunkState::Meshed);
+
+            // Optionnel : ne faire qu'un seul mesh par frame pour lisser les perfs
+            // break;
+        }
+    }
+}
 
 void World::render(const opticrafter::Frustum& frustum) {
     ZoneScopedN("WorldRender");
     TracyGpuZone("Draw chunks");
-    for (const auto& data : m_chunk_render_data) {
-        if (!frustum.intersects(data.aabb)) continue;
+    m_renderer.textures()->bind(m_atlas.handle());
 
-        m_renderer.draw(*data.mesh, {0}, data.transform);
+    for (auto& data : m_chunk_render_data) {
+        if (!data) continue;
+        if (!frustum.intersects(data->aabb)) continue;
+
+        m_renderer.draw(*data->mesh, {0}, data->transform);
     }
 }
