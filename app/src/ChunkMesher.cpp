@@ -6,47 +6,103 @@
 #include "Chunk.h"
 #include "ChunkGrid.h"
 
+void ChunkMesher::reset() { m_mesh_builder.reset(); }
+
 ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
     ZoneScoped;
-    auto coords = chunk.coords();
-    int wx = coords.x * Chunk::CHUNK_WIDTH;
-    int wz = coords.y * Chunk::CHUNK_WIDTH;
+    m_mesh_builder.reset();
 
-    for (size_t z = 0; z < Chunk::CHUNK_WIDTH; z++) {
-        for (size_t y = 0; y < Chunk::CHUNK_HEIGHT; y++) {
-            for (size_t x = 0; x < Chunk::CHUNK_WIDTH; x++) {
-                const auto& block_type = chunk.getBlock(x, y, z);
-                if (block_type == BlockType::AIR) continue;
-                auto& block_def = m_registry.get(block_type);
+    auto coords = chunk.coords();
+
+    for (int z = 0; z < Chunk::CHUNK_WIDTH; z++) {
+        for (int y = 0; y < Chunk::CHUNK_HEIGHT; y++) {
+            for (int x = 0; x < Chunk::CHUNK_WIDTH; x++) {
+                auto block_opt = chunk.getBlock(x, y, z);
+                if (!block_opt || *block_opt == BlockType::AIR) continue;
+                auto& block_def = m_registry.get(*block_opt);
 
                 // Top
-                auto neighbor = grid.getBlock({wx + x, y + 1, wz + z});
+                auto neighbor = chunk.getBlock(x, y + 1, z);
                 if (!neighbor || m_registry.get(*neighbor).transparent)
                     m_mesh_builder.addCubeFace({x, y, z}, block_def.top, MeshBuilder::Face::Top);
                 // Bottom
-                neighbor = grid.getBlock({wx + x, y - 1, wz + z});
+                neighbor = chunk.getBlock(x, y - 1, z);
                 if (!neighbor || m_registry.get(*neighbor).transparent)
                     m_mesh_builder.addCubeFace({x, y, z}, block_def.bottom, MeshBuilder::Face::Bottom);
+
                 // Front
-                neighbor = grid.getBlock({wx + x, y, wz + z + 1});
-                if (!neighbor || m_registry.get(*neighbor).transparent)
-                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                if (z == Chunk::CHUNK_WIDTH - 1) {
+                    auto neighbor_chunk = grid.getChunk(coords.x, coords.y + 1);
+                    if (neighbor_chunk) {
+                        neighbor = neighbor_chunk->getBlock(x, y, 0);
+                        if (!neighbor || m_registry.get(*neighbor).transparent) {
+                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                        }
+                    } else {
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                    }
+                } else {
+                    neighbor = chunk.getBlock(x, y, z + 1);
+                    if (!neighbor || m_registry.get(*neighbor).transparent) {
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                    }
+                }
+
                 // Back
-                neighbor = grid.getBlock({wx + x, y, wz + z - 1});
-                if (!neighbor || m_registry.get(*neighbor).transparent)
-                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                if (z == 0) {
+                    auto neighbor_chunk = grid.getChunk(coords.x, coords.y - 1);
+                    if (neighbor_chunk) {
+                        neighbor = neighbor_chunk->getBlock(x, y, Chunk::CHUNK_WIDTH - 1);
+                        if (!neighbor || m_registry.get(*neighbor).transparent) {
+                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                        }
+                    } else {
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                    }
+                } else {
+                    neighbor = chunk.getBlock(x, y, z - 1);
+                    if (!neighbor || m_registry.get(*neighbor).transparent) {
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                    }
+                }
+
                 // Right
-                neighbor = grid.getBlock({wx + x + 1, y, wz + z});
-                if (!neighbor || m_registry.get(*neighbor).transparent)
-                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                if (x == Chunk::CHUNK_WIDTH - 1) {
+                    auto neighbor_chunk = grid.getChunk(coords.x + 1, coords.y);
+                    if (neighbor_chunk) {
+                        neighbor = neighbor_chunk->getBlock(0, y, z);
+                        if (!neighbor || m_registry.get(*neighbor).transparent)
+                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                    } else {
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                    }
+                } else {
+                    neighbor = chunk.getBlock(x + 1, y, z);
+                    if (!neighbor || m_registry.get(*neighbor).transparent)
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                }
+
                 // Left
-                neighbor = grid.getBlock({wx + x - 1, y, wz + z});
-                if (!neighbor || m_registry.get(*neighbor).transparent)
-                    m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
+                if (x == 0) {
+                    auto neighbor_chunk = grid.getChunk(coords.x - 1, coords.y);
+                    if (neighbor_chunk) {
+                        neighbor = neighbor_chunk->getBlock(Chunk::CHUNK_WIDTH - 1, y, z);
+                        if (!neighbor || m_registry.get(*neighbor).transparent)
+                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
+                    } else {
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
+                    }
+                } else {
+                    neighbor = chunk.getBlock(x - 1, y, z);
+                    if (!neighbor || m_registry.get(*neighbor).transparent)
+                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
+                }
             }
         }
     }
 
+    int wx = coords.x * Chunk::CHUNK_WIDTH;
+    int wz = coords.y * Chunk::CHUNK_WIDTH;
     glm::vec3 world_pos = {wx, 0, wz};
 
     return {

@@ -15,9 +15,9 @@ struct Mesh {
     Mesh(const Mesh&) = delete;
     Mesh& operator=(const Mesh&) = delete;
 
-    VertexArray vao;
     VertexBuffer vbo;
     IndexBuffer ebo;
+    VertexArray vao;
 };
 
 }  // namespace opticrafter

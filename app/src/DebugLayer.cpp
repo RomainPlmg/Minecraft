@@ -31,6 +31,8 @@ void DebugLayer::onRender() {
     ImGui::Text("Draw calls: %d", m_engine.renderer()->stats().draw_calls);
     ImGui::Text("Triangles: %d", m_engine.renderer()->stats().triangles);
     ImGui::Text("Viewport resolution: %dx%d", m_engine.renderer()->viewport().w, m_engine.renderer()->viewport().h);
+    ImGui::Text("Camera pos: %f/%f/%f", m_engine.renderer()->stats().camera_pos.x,
+                m_engine.renderer()->stats().camera_pos.y, m_engine.renderer()->stats().camera_pos.z);
     ImGui::End();
 
     ImGui::Render();

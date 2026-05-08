@@ -23,6 +23,7 @@ struct SceneData {
 struct RenderStats {
     uint32_t draw_calls = 0;
     uint32_t triangles = 0;
+    glm::vec3 camera_pos{};
 };
 
 class Renderer {

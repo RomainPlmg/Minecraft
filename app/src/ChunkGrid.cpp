@@ -11,25 +11,12 @@ ChunkGrid::ChunkGrid(uint8_t render_distance, glm::ivec2 origin) : m_origin(orig
     }
 }
 
-std::optional<BlockType> ChunkGrid::getBlock(const glm::ivec3 coord) const {
-    // Outside vertical limits
-    if (coord.y < 0 || coord.y >= Chunk::CHUNK_HEIGHT) {
-        return std::nullopt;
+Chunk* ChunkGrid::getChunk(int cx, int cz) const {
+    if (!isInBounds(cx, cz)) {
+        return nullptr;
     }
 
-    // Calculate chunk position
-    int cx = std::floor(coord.x / (float)Chunk::CHUNK_WIDTH);
-    int cz = std::floor(coord.z / (float)Chunk::CHUNK_WIDTH);
-
-    if (!isInBounds(cx, cz)) return std::nullopt;
-
-    auto idx = index(cx, cz);
-
-    // Local coordinates in the chunk
-    int lx = coord.x - cx * Chunk::CHUNK_WIDTH;
-    int lz = coord.z - cz * Chunk::CHUNK_WIDTH;
-
-    return m_chunks[idx]->getBlock(lx, coord.y, lz);
+    return m_chunks[index(cx, cz)].get();
 }
 
 bool ChunkGrid::isInBounds(int cx, int cz) const {
@@ -38,7 +25,8 @@ bool ChunkGrid::isInBounds(int cx, int cz) const {
 }
 
 size_t ChunkGrid::index(int cx, int cz) const {
-    int x = ((cx % m_size) + m_size) % m_size;  // Modulo to wrap negative coord into [0, size]
-    int z = ((cz % m_size) + m_size) % m_size;
+    int half = m_size / 2;
+    int x = cx + half;
+    int z = cz + half;
     return x + z * m_size;
 }

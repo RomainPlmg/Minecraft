@@ -1,8 +1,14 @@
 #include "Chunk.h"
 
-Chunk::Chunk(int cx, int cz) : m_coords(cx, cz) { m_blocks.fill(BlockType::COPPER_BLOCK); }
+Chunk::Chunk(int cx, int cz) : m_coords(cx, cz) {
+    m_blocks.fill(BlockType::COPPER_BLOCK);
+}
 
-BlockType Chunk::getBlock(int x, int y, int z) const { return m_blocks[index(x, y, z)]; }
+std::optional<BlockType> Chunk::getBlock(int x, int y, int z) const {
+    if (!contains(x, y, z)) return std::nullopt;
+
+    return m_blocks[index(x, y, z)];
+}
 
 void Chunk::setBlock(int x, int y, int z, BlockType type) { m_blocks[index(x, y, z)] = type; }
 

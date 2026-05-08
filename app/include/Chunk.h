@@ -6,12 +6,12 @@
 
 class Chunk {
    public:
-    static constexpr int CHUNK_WIDTH = 3;
-    static constexpr int CHUNK_HEIGHT = 3;
+    static constexpr int CHUNK_WIDTH = 16;
+    static constexpr int CHUNK_HEIGHT = 256;
 
     Chunk(int cx, int cz);
 
-    [[nodiscard]] BlockType getBlock(int x, int y, int z) const;
+    [[nodiscard]] std::optional<BlockType> getBlock(int x, int y, int z) const;
     void setBlock(int x, int y, int z, BlockType type);
     bool contains(int x, int y, int z) const;
 

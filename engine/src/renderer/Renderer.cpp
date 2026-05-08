@@ -19,7 +19,7 @@ Renderer::Renderer(const GLContext& ctx) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     setViewport({0, 0, 1280, 720});
     setClearColor({30, 30, 30, 255});
@@ -50,11 +50,16 @@ void Renderer::beginScene(const Camera& camera) {
     m_stats.triangles = 0;
     m_scene_data.proj = camera.projection(m_viewport);
     m_scene_data.view = camera.view();
+
+    m_stats.camera_pos = camera.position();
 }
 
 void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {
     ZoneScoped;
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    GLuint query;
+    glGenQueries(1, &query);
+    glBeginQuery(GL_PRIMITIVES_GENERATED, query);
+    // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     m_shader_manager->bind(material.id);
     m_shader_manager->setMat4(material.id, "u_proj", m_scene_data.proj);
     m_shader_manager->setMat4(material.id, "u_view", m_scene_data.view);
@@ -81,9 +86,14 @@ void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4&
 
     mesh.vao.bind();
     glDrawElements(GL_TRIANGLES, mesh.ebo.count(), GL_UNSIGNED_INT, nullptr);
+    glEndQuery(GL_PRIMITIVES_GENERATED);
+
+    GLuint primitives = 0;
+    glGetQueryObjectuiv(query, GL_QUERY_RESULT, &primitives);
+    glDeleteQueries(1, &query);
 
     m_stats.draw_calls++;
-    m_stats.triangles = mesh.ebo.count() / 3;
+    m_stats.triangles += primitives;
 }
 
 }  // namespace opticrafter

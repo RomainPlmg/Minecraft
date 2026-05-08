@@ -16,8 +16,11 @@ struct ChunkRenderData {
 class ChunkMesher {
    public:
     ChunkMesher(const opticrafter::TextureAtlas& atlas, const BlockRegistry& registry)
-        : m_atlas(atlas), m_registry(registry) {}
+        : m_atlas(atlas), m_registry(registry) {
+        m_mesh_builder.reset();
+    }
 
+    void reset();
     ChunkRenderData build(const Chunk& chunk, const ChunkGrid& grid);
 
    private:

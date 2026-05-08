@@ -7,6 +7,7 @@
 
 void World::init() {
     ZoneScoped;
+
     // Build the texture atlas
     m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
     m_atlas.add("dirt", ASSETS_DIR "textures/dirt.png");
@@ -44,13 +45,12 @@ void World::init() {
                                                           .transparent = false,
                                                       });
 
-    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[0], m_chunk_grid));
-    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[1], m_chunk_grid));
-    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[2], m_chunk_grid));
-    m_chunk_render_data.push_back(m_chunk_mesher.build(*m_chunk_grid[3], m_chunk_grid));
-    // for (const auto& chunk : m_chunk_grid) {
-    //     m_chunk_render_data.push_back(m_chunk_mesher.build(*chunk, m_chunk_grid));
-    // }
+    for (const auto& chunk : m_chunk_grid) {
+        m_chunk_mesher.reset();
+        m_chunk_render_data.push_back(m_chunk_mesher.build(*chunk, m_chunk_grid));
+    }
+
+    m_renderer.textures()->bind(m_atlas.handle());
 }
 
 void World::update(float dt) {}
@@ -58,7 +58,6 @@ void World::update(float dt) {}
 void World::render(const opticrafter::Frustum& frustum) {
     ZoneScoped;
     TracyGpuZone("Draw chunks");
-    m_renderer.textures()->bind(m_atlas.handle());
     for (const auto& data : m_chunk_render_data) {
         if (!frustum.intersects(data.aabb)) continue;
 

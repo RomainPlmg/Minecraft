@@ -6,7 +6,7 @@ class ChunkGrid {
    public:
     ChunkGrid(uint8_t render_distance, glm::ivec2 origin = {});
 
-    std::optional<BlockType> getBlock(const glm::ivec3 coord) const;
+    Chunk* getChunk(int cx, int cz) const;
     bool isInBounds(int cx, int cz) const;
 
     auto begin() const { return m_chunks.begin(); }
