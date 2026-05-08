@@ -33,6 +33,11 @@ void DebugLayer::onRender() {
     ImGui::Text("Viewport resolution: %dx%d", m_engine.renderer()->viewport().w, m_engine.renderer()->viewport().h);
     ImGui::Text("Camera pos: %f/%f/%f", m_engine.renderer()->stats().camera_pos.x,
                 m_engine.renderer()->stats().camera_pos.y, m_engine.renderer()->stats().camera_pos.z);
+
+    static bool wireframe = false;
+    if (ImGui::Checkbox("Wireframe", &wireframe)) {
+        m_engine.renderer()->setWireframe(wireframe);
+    }
     ImGui::End();
 
     ImGui::Render();

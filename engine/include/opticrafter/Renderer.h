@@ -35,6 +35,7 @@ class Renderer {
 
     void setClearColor(const Color& color);
     void setViewport(const Viewport& viewport);
+    void setWireframe(bool value);
 
     void beginScene(const Camera& camera);
     void draw(const Mesh& mesh, const Material& material, const glm::mat4& transform);

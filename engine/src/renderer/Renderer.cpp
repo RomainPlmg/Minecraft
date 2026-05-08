@@ -45,6 +45,8 @@ void Renderer::setViewport(const Viewport& viewport) {
     glViewport(m_viewport.x, m_viewport.y, m_viewport.w, m_viewport.h);
 }
 
+void Renderer::setWireframe(bool value) { glPolygonMode(GL_FRONT_AND_BACK, value ? GL_LINE : GL_FILL); }
+
 void Renderer::beginScene(const Camera& camera) {
     m_stats.draw_calls = 0;
     m_stats.triangles = 0;
@@ -59,7 +61,6 @@ void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4&
     GLuint query;
     glGenQueries(1, &query);
     glBeginQuery(GL_PRIMITIVES_GENERATED, query);
-    // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     m_shader_manager->bind(material.id);
     m_shader_manager->setMat4(material.id, "u_proj", m_scene_data.proj);
     m_shader_manager->setMat4(material.id, "u_view", m_scene_data.view);
