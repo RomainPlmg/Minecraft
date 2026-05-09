@@ -14,9 +14,14 @@ class ChunkGrid {
     auto begin() const { return m_chunks.begin(); }
     auto end() const { return m_chunks.end(); }
 
+    std::vector<Chunk*> pollDirtyChunks(size_t max);
+    std::vector<glm::ivec2> pollInvalidatedChunks();
+
    private:
     int m_ox, m_oz;  // Origins
     int m_size = 0;
     opticrafter::RingBuffer2D<std::unique_ptr<Chunk>> m_chunks;
-    std::vector<glm::ivec2> m_invalidated;
+
+    std::queue<Chunk*> m_dirty;
+    std::queue<glm::ivec2> m_invalidated;
 };

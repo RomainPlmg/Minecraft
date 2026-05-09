@@ -5,6 +5,8 @@
 #include "ChunkMesher.h"
 #include "opticrafter/OptiCrafter.h"
 
+constexpr int MAX_CHUNK_MESHED_PER_FRAME = 1;
+
 class World {
    public:
     World(opticrafter::Renderer& renderer);
@@ -14,7 +16,7 @@ class World {
     void render(const opticrafter::Frustum& frustum);
 
    private:
-    uint8_t m_render_distance = 1;
+    uint8_t m_render_distance = 8;
     opticrafter::Renderer& m_renderer;
     opticrafter::TextureAtlas m_atlas;
     BlockRegistry m_registry;

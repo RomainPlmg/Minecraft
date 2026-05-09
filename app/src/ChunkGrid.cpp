@@ -30,6 +30,7 @@ void ChunkGrid::setOrigin(int ox, int oz) {
             if (x < ox - rd || x > ox + rd || z < oz - rd || z > oz + rd) {
                 // Remove the chunk
                 m_chunks.get(x, z).reset();
+                m_invalidated.push({x, z});
             }
         }
     }
@@ -46,28 +47,57 @@ void ChunkGrid::setOrigin(int ox, int oz) {
             if (!slot || slot->coords().x != x || slot->coords().y != z) {
                 slot = std::make_unique<Chunk>(x, z);
                 slot->setState(ChunkState::Dirty);
+                m_dirty.push(slot.get());
 
                 // Invalidates neighbors
                 auto* neighbor = getChunk(x, z + 1);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
+                    m_dirty.push(neighbor);
                 }
 
                 neighbor = getChunk(x, z - 1);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
+                    m_dirty.push(neighbor);
                 }
 
                 neighbor = getChunk(x + 1, z);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
+                    m_dirty.push(neighbor);
                 }
 
                 neighbor = getChunk(x - 1, z);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
+                    m_dirty.push(neighbor);
                 }
             }
         }
     }
+}
+
+std::vector<Chunk*> ChunkGrid::pollDirtyChunks(size_t max) {
+    std::vector<Chunk*> v;
+
+    size_t i = 0;
+    while (!m_dirty.empty() && i < max) {
+        v.push_back(m_dirty.front());
+        m_dirty.pop();
+        i++;
+    }
+
+    return v;
+}
+
+std::vector<glm::ivec2> ChunkGrid::pollInvalidatedChunks() {
+    std::vector<glm::ivec2> v;
+
+    while (!m_invalidated.empty()) {
+        v.push_back(m_invalidated.front());
+        m_invalidated.pop();
+    }
+
+    return v;
 }

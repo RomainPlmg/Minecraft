@@ -61,22 +61,15 @@ void World::update(float dt, const glm::vec3& pos) {
     m_chunk_grid.setOrigin(std::floor(pos.x / (float)Chunk::CHUNK_WIDTH),
                            std::floor(pos.z / (float)Chunk::CHUNK_WIDTH));
 
-    for (auto& chunk : m_chunk_grid) {
-        if (chunk->state() == ChunkState::Dirty) {
-            auto coords = chunk->coords();
+    for (const auto& coord : m_chunk_grid.pollInvalidatedChunks()) {
+        m_chunk_render_data.set(coord.x, coord.y, std::nullopt);
+    }
 
-            // On génère le mesh
-            auto meshData = m_chunk_mesher.build(*chunk, m_chunk_grid);
-
-            // On l'envoie au renderer
-            m_chunk_render_data.set(coords.x, coords.y, std::move(meshData));
-
-            // IMPORTANT : On retire le flag dirty
-            chunk->setState(ChunkState::Meshed);
-
-            // Optionnel : ne faire qu'un seul mesh par frame pour lisser les perfs
-            // break;
-        }
+    for (auto chunk : m_chunk_grid.pollDirtyChunks(MAX_CHUNK_MESHED_PER_FRAME)) {
+        auto coords = chunk->coords();
+        auto meshData = m_chunk_mesher.build(*chunk, m_chunk_grid);
+        m_chunk_render_data.set(coords.x, coords.y, std::move(meshData));
+        chunk->setState(ChunkState::Meshed);
     }
 }
 
