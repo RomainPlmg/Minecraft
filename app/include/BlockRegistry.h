@@ -8,6 +8,7 @@ enum class BlockType : uint8_t {
     DIRT,
     STONE,
     COPPER_BLOCK,
+    BEDROCK,
 };
 
 struct BlockDef {

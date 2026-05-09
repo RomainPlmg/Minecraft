@@ -13,8 +13,10 @@ Chunk::Chunk(int cx, int cz, const TerrainGenerator& generator) : m_coords(cx, c
                     setBlock(x, y, z, BlockType::GRASS);
                 else if (y >= height - 3 && y < height)
                     setBlock(x, y, z, BlockType::DIRT);
-                else
+                else if (y > 0)
                     setBlock(x, y, z, BlockType::STONE);
+                else
+                    setBlock(x, y, z, BlockType::BEDROCK);
             }
         }
     }

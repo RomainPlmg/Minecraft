@@ -21,6 +21,7 @@ void World::init() {
     m_atlas.add("grass_block_side", ASSETS_DIR "textures/grass_block_side.png");
     m_atlas.add("grass_block_top", ASSETS_DIR "textures/grass_block_top.png");
     m_atlas.add("copper_block", ASSETS_DIR "textures/copper_block.png");
+    m_atlas.add("bedrock", ASSETS_DIR "textures/bedrock.png");
     m_atlas.build(m_renderer);
 
     m_registry.registerBlock(BlockType::AIR, {
@@ -53,6 +54,13 @@ void World::init() {
                                                           .top = m_atlas.region("copper_block"),
                                                           .side = m_atlas.region("copper_block"),
                                                           .bottom = m_atlas.region("copper_block"),
+                                                          .transparent = false,
+                                                      });
+    m_registry.registerBlock(BlockType::BEDROCK, {
+                                                          .name = "bedrock",
+                                                          .top = m_atlas.region("bedrock"),
+                                                          .side = m_atlas.region("bedrock"),
+                                                          .bottom = m_atlas.region("bedrock"),
                                                           .transparent = false,
                                                       });
     for (const auto& chunk : m_chunk_grid) {
