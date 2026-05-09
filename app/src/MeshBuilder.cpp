@@ -12,8 +12,8 @@ static opticrafter::VertexAttrib mesh_attrib[] = {
 };
 
 void MeshBuilder::reset() {
-    m_indices.clear();
-    m_vertices.clear();
+    m_data.indices.clear();
+    m_data.vertices.clear();
 }
 
 void MeshBuilder::addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, Face face) {
@@ -70,23 +70,23 @@ void MeshBuilder::addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion&
 }
 
 std::unique_ptr<opticrafter::Mesh> MeshBuilder::build() {
-    return std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(m_vertices)), mesh_attrib, sizeof(Vertex),
-                                               m_indices);
+    return std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(m_data.vertices)), mesh_attrib, sizeof(Vertex),
+                                               m_data.indices);
 }
 
 void MeshBuilder::addQuad(const std::array<Vertex, 4>& vertices) {
-    uint32_t base_index = static_cast<uint32_t>(m_vertices.size());
+    uint32_t base_index = static_cast<uint32_t>(m_data.vertices.size());
 
     for (const auto& vertex : vertices) {
-        m_vertices.push_back(vertex);
+        m_data.vertices.push_back(vertex);
     }
 
     // Two triangles
-    m_indices.push_back(base_index + 0);
-    m_indices.push_back(base_index + 1);
-    m_indices.push_back(base_index + 2);
+    m_data.indices.push_back(base_index + 0);
+    m_data.indices.push_back(base_index + 1);
+    m_data.indices.push_back(base_index + 2);
 
-    m_indices.push_back(base_index + 2);
-    m_indices.push_back(base_index + 3);
-    m_indices.push_back(base_index + 0);
+    m_data.indices.push_back(base_index + 2);
+    m_data.indices.push_back(base_index + 3);
+    m_data.indices.push_back(base_index + 0);
 }

@@ -57,7 +57,8 @@ void World::init() {
                                                       });
     for (const auto& chunk : m_chunk_grid) {
         auto coords = chunk->coords();
-        m_chunk_render_data.set(coords.x, coords.y, m_chunk_mesher.build(*chunk, m_chunk_grid));
+        auto mesh_data = m_chunk_mesher.build(*chunk, m_chunk_grid);
+        m_chunk_render_data.set(coords.x, coords.y, m_chunk_mesher.uploadToGPU(std::move(mesh_data)));
     }
 }
 
@@ -75,8 +76,8 @@ void World::update(float dt, const glm::vec3& pos) {
         if (current != chunk) continue;
 
         auto coords = chunk->coords();
-        auto meshData = m_chunk_mesher.build(*chunk, m_chunk_grid);
-        m_chunk_render_data.set(coords.x, coords.y, std::move(meshData));
+        auto mesh_data = m_chunk_mesher.build(*chunk, m_chunk_grid);
+        m_chunk_render_data.set(coords.x, coords.y, m_chunk_mesher.uploadToGPU(std::move(mesh_data)));
         chunk->setState(ChunkState::Meshed);
     }
 }

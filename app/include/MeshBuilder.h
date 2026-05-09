@@ -11,6 +11,12 @@ struct Vertex {
     float luminosity;
 };
 
+struct MeshData {
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+    glm::vec3 coords;
+};
+
 class MeshBuilder {
    public:
     enum class Face { Top, Bottom, Front, Back, Right, Left };
@@ -19,12 +25,10 @@ class MeshBuilder {
     void addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, Face face);
     std::unique_ptr<opticrafter::Mesh> build();
 
-    const std::vector<Vertex>& getVertices() const { return m_vertices; }
-    const std::vector<uint32_t>& getIndices() const { return m_indices; }
+    const MeshData& getData() const { return m_data; }
 
    private:
-    std::vector<Vertex> m_vertices;
-    std::vector<uint32_t> m_indices;
+    MeshData m_data;
 
     void addQuad(const std::array<Vertex, 4>& vertices);
 };

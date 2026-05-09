@@ -1,16 +1,25 @@
 #include "ChunkMesher.h"
 
+#include <glad/gl.h>
+
 #include <glm/ext/matrix_transform.hpp>
 #include <tracy/Tracy.hpp>
 
 #include "Chunk.h"
 #include "ChunkGrid.h"
 
-void ChunkMesher::reset() { m_mesh_builder.reset(); }
+static opticrafter::VertexAttrib mesh_attrib[] = {
+    {0, 3, GL_FLOAT, 0},
+    {1, 2, GL_FLOAT, 3 * sizeof(float)},
+    {2, 3, GL_FLOAT, 5 * sizeof(float)},
+    {3, 1, GL_FLOAT, 8 * sizeof(float)},
+};
 
-ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
+void ChunkMesher::reset() { m_builder.reset(); }
+
+MeshData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
     ZoneScopedN("ChunkMesherBuild");
-    m_mesh_builder.reset();
+    m_builder.reset();
 
     auto coords = chunk.coords();
 
@@ -24,11 +33,11 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                 // Top
                 auto neighbor = chunk.getBlock(x, y + 1, z);
                 if (!neighbor || m_registry.get(*neighbor).transparent)
-                    m_mesh_builder.addCubeFace({x, y, z}, block_def.top, MeshBuilder::Face::Top);
+                    m_builder.addCubeFace({x, y, z}, block_def.top, MeshBuilder::Face::Top);
                 // Bottom
                 neighbor = chunk.getBlock(x, y - 1, z);
                 if (!neighbor || m_registry.get(*neighbor).transparent)
-                    m_mesh_builder.addCubeFace({x, y, z}, block_def.bottom, MeshBuilder::Face::Bottom);
+                    m_builder.addCubeFace({x, y, z}, block_def.bottom, MeshBuilder::Face::Bottom);
 
                 // Front
                 if (z == Chunk::CHUNK_WIDTH - 1) {
@@ -36,13 +45,13 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                     if (neighbor_chunk) {
                         neighbor = neighbor_chunk->getBlock(x, y, 0);
                         if (!neighbor || m_registry.get(*neighbor).transparent) {
-                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                            m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
                         }
                     }
                 } else {
                     neighbor = chunk.getBlock(x, y, z + 1);
                     if (!neighbor || m_registry.get(*neighbor).transparent) {
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
+                        m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
                     }
                 }
 
@@ -52,13 +61,13 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                     if (neighbor_chunk) {
                         neighbor = neighbor_chunk->getBlock(x, y, Chunk::CHUNK_WIDTH - 1);
                         if (!neighbor || m_registry.get(*neighbor).transparent) {
-                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                            m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
                         }
                     }
                 } else {
                     neighbor = chunk.getBlock(x, y, z - 1);
                     if (!neighbor || m_registry.get(*neighbor).transparent) {
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
+                        m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
                     }
                 }
 
@@ -68,12 +77,12 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                     if (neighbor_chunk) {
                         neighbor = neighbor_chunk->getBlock(0, y, z);
                         if (!neighbor || m_registry.get(*neighbor).transparent)
-                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                            m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
                     }
                 } else {
                     neighbor = chunk.getBlock(x + 1, y, z);
                     if (!neighbor || m_registry.get(*neighbor).transparent)
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
+                        m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
                 }
 
                 // Left
@@ -82,12 +91,12 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                     if (neighbor_chunk) {
                         neighbor = neighbor_chunk->getBlock(Chunk::CHUNK_WIDTH - 1, y, z);
                         if (!neighbor || m_registry.get(*neighbor).transparent)
-                            m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
+                            m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
                     }
                 } else {
                     neighbor = chunk.getBlock(x - 1, y, z);
                     if (!neighbor || m_registry.get(*neighbor).transparent)
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
+                        m_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
                 }
             }
         }
@@ -98,7 +107,22 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
     glm::vec3 world_pos = {wx, 0, wz};
 
     return {
-        m_mesh_builder.build(),
+        .vertices = m_builder.getData().vertices,
+        .indices = m_builder.getData().indices,
+        .coords = {coords.x, 0, coords.y},
+    };
+}
+
+ChunkRenderData ChunkMesher::uploadToGPU(MeshData&& data) {
+    int wx = data.coords.x * Chunk::CHUNK_WIDTH;
+    int wz = data.coords.z * Chunk::CHUNK_WIDTH;
+    glm::vec3 world_pos = {wx, 0, wz};
+
+    auto mesh = std::make_unique<opticrafter::Mesh>(std::as_bytes(std::span(data.vertices)), mesh_attrib,
+                                                    sizeof(Vertex), data.indices);
+
+    return {
+        std::move(mesh),
         opticrafter::AABB(world_pos,
                           world_pos + glm::vec3(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, Chunk::CHUNK_WIDTH)),
         glm::translate(glm::mat4(1.f), world_pos),

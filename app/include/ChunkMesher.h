@@ -17,14 +17,15 @@ class ChunkMesher {
    public:
     ChunkMesher(const opticrafter::TextureAtlas& atlas, const BlockRegistry& registry)
         : m_atlas(atlas), m_registry(registry) {
-        m_mesh_builder.reset();
+        m_builder.reset();
     }
 
     void reset();
-    ChunkRenderData build(const Chunk& chunk, const ChunkGrid& grid);
+    MeshData build(const Chunk& chunk, const ChunkGrid& grid);
+    static ChunkRenderData uploadToGPU(MeshData&& data);
 
    private:
     const opticrafter::TextureAtlas& m_atlas;
     const BlockRegistry& m_registry;
-    MeshBuilder m_mesh_builder;
+    MeshBuilder m_builder;
 };
