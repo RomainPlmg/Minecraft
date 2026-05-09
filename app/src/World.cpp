@@ -23,6 +23,10 @@ void World::init() {
     m_atlas.add("copper_block", ASSETS_DIR "textures/copper_block.png");
     m_atlas.build(m_renderer);
 
+    m_registry.registerBlock(BlockType::AIR, {
+                                                 .name = "air",
+                                                 .transparent = true,
+                                             });
     m_registry.registerBlock(BlockType::GRASS, {
                                                    .name = "grass",
                                                    .top = m_atlas.region("grass_block_top"),
