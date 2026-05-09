@@ -1,21 +1,11 @@
 #include "DebugLayer.h"
 
-#include "imgui.h"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_sdl3.h"
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl3.h>
 
 DebugLayer::DebugLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine)
-    : opticrafter::Layer(stack), m_engine(engine) {
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForOpenGL(m_engine.window()->handle(), m_engine.window()->context());
-    ImGui_ImplOpenGL3_Init();
-}
+    : opticrafter::Layer(stack, engine) {}
 
 void DebugLayer::onEvent(SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 

@@ -5,7 +5,7 @@
 
 class WorldLayer : public opticrafter::Layer {
    public:
-    WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer);
+    WorldLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine);
 
     void onEvent(SDL_Event& event) override;
     void onUpdate(float dt) override;
@@ -13,6 +13,5 @@ class WorldLayer : public opticrafter::Layer {
 
    private:
     World m_world;
-    opticrafter::Renderer& m_renderer;
     std::unique_ptr<opticrafter::Camera> m_camera;
 };

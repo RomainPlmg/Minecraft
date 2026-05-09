@@ -3,13 +3,17 @@
 #include <glm/glm.hpp>
 #include <tracy/Tracy.hpp>
 
-WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Renderer& renderer)
-    : opticrafter::Layer(stack), m_world(renderer), m_renderer(renderer) {
+#include "DebugLayer.h"
+
+WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine)
+    : opticrafter::Layer(stack, engine), m_world(*engine.renderer()) {
+    pushOverlay<DebugLayer>();
+
     m_camera = std::make_unique<opticrafter::Camera>(glm::vec3(
         (float)Chunk::CHUNK_WIDTH / 2.f + .5f, (float)Chunk::CHUNK_HEIGHT + 2, (float)Chunk::CHUNK_WIDTH / 2.f + .5f));
     m_world.init();
 
-    renderer.shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
+    m_engine.renderer()->shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
 }
 
 void WorldLayer::onEvent(SDL_Event& event) {}
@@ -40,11 +44,11 @@ void WorldLayer::onUpdate(float dt) {
     } else
         m_camera->freeze(true);
 
-    m_camera->update(m_renderer.viewport());
+    m_camera->update(m_engine.renderer()->viewport());
 }
 
 void WorldLayer::onRender() {
     ZoneScopedN("WorldLayerRender");
-    m_renderer.beginScene(*m_camera);
+    m_engine.renderer()->beginScene(*m_camera);
     m_world.render(m_camera->frustum());
 }

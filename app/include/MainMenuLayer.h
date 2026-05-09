@@ -2,14 +2,11 @@
 
 #include "opticrafter/OptiCrafter.h"
 
-class DebugLayer : public opticrafter::Layer {
+class MainMenuLayer : public opticrafter::Layer {
    public:
-    DebugLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine);
+    MainMenuLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine) : opticrafter::Layer(stack, engine) {}
 
     void onEvent(SDL_Event& event) override;
     void onUpdate(float dt) override;
     void onRender() override;
-
-   private:
-    float m_fps = 0.f;
 };

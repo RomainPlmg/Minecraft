@@ -34,10 +34,9 @@ Engine::~Engine() {
 }
 
 void Engine::run() {
-    bool running = true;
     m_timer.reset();
 
-    while (running) {
+    while (m_running) {
         ZoneScopedN("MainLoop");
         m_timer.update();
         auto dt = m_timer.dt();
@@ -46,7 +45,7 @@ void Engine::run() {
             ZoneScopedN("PollEvents");
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_EVENT_QUIT) running = false;
+                if (event.type == SDL_EVENT_QUIT) m_running = false;
                 if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                     if (event.window.data1 >= 0 && event.window.data2 >= 0)
                         m_renderer->setViewport({0, 0, (uint32_t)event.window.data1, (uint32_t)event.window.data2});
@@ -84,5 +83,7 @@ void Engine::run() {
         FrameMark;
     }
 }
+
+void Engine::quit() { m_running = false; }
 
 }  // namespace opticrafter
