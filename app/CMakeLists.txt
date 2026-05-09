@@ -32,7 +32,9 @@ target_include_directories(imgui PUBLIC
     ${imgui_SOURCE_DIR}/backends
 )
 
-target_link_libraries(Minecraft PRIVATE opticrafter imgui)
+add_subdirectory(vendor)
+
+target_link_libraries(Minecraft PRIVATE opticrafter imgui FastNoiseLite)
 
 # ============================================================================
 # Compilation properties
