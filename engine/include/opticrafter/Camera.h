@@ -51,7 +51,7 @@ class Camera {
     float m_sensitivity = CAMERA_SENSITIVITY;
     float m_zoom = CAMERA_ZOOM;
     float m_fov = 45.f;
-    float m_near = 0.1f, m_far = 100.f;
+    float m_near = 0.1f, m_far = 1000.f;
     bool m_freeze = false;
 
     // Frustum
