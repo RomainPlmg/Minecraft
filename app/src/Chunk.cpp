@@ -1,7 +1,23 @@
 #include "Chunk.h"
 
-Chunk::Chunk(int cx, int cz) : m_coords(cx, cz) {
-    m_blocks.fill(BlockType::COPPER_BLOCK);
+#include "TerrainGenerator.h"
+
+Chunk::Chunk(int cx, int cz, const TerrainGenerator& generator) : m_coords(cx, cz) {
+    m_blocks.fill(BlockType::AIR);
+
+    for (int z = 0; z < CHUNK_WIDTH; z++) {
+        for (int x = 0; x < CHUNK_WIDTH; x++) {
+            int height = generator.getHeight(cx * CHUNK_WIDTH + x, cz * CHUNK_WIDTH + z);
+            for (int y = 0; y <= height && y < CHUNK_HEIGHT; y++) {
+                if (y == height)
+                    setBlock(x, y, z, BlockType::GRASS);
+                else if (y >= height - 3 && y < height)
+                    setBlock(x, y, z, BlockType::DIRT);
+                else
+                    setBlock(x, y, z, BlockType::STONE);
+            }
+        }
+    }
     m_state = ChunkState::Generated;
 }
 

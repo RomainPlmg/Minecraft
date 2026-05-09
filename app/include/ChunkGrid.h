@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Chunk.h"
+#include "TerrainGenerator.h"
 
 class ChunkGrid {
    public:
@@ -20,6 +21,7 @@ class ChunkGrid {
    private:
     int m_ox, m_oz;  // Origins
     int m_size = 0;
+    TerrainGenerator m_generator;
     opticrafter::RingBuffer2D<std::unique_ptr<Chunk>> m_chunks;
 
     std::queue<Chunk*> m_dirty;

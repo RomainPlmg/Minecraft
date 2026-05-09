@@ -10,7 +10,7 @@ WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engi
     pushOverlay<DebugLayer>();
 
     m_camera = std::make_unique<opticrafter::Camera>(glm::vec3(
-        (float)Chunk::CHUNK_WIDTH / 2.f + .5f, (float)Chunk::CHUNK_HEIGHT + 2, (float)Chunk::CHUNK_WIDTH / 2.f + .5f));
+        (float)Chunk::CHUNK_WIDTH / 2.f + .5f, 10.f, (float)Chunk::CHUNK_WIDTH / 2.f + .5f));
     m_world.init();
 
     m_engine.renderer()->shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");

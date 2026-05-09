@@ -45,7 +45,7 @@ void ChunkGrid::setOrigin(int ox, int oz) {
             auto& slot = m_chunks.get(x, z);
 
             if (!slot || slot->coords().x != x || slot->coords().y != z) {
-                slot = std::make_unique<Chunk>(x, z);
+                slot = std::make_unique<Chunk>(x, z, m_generator);
                 slot->setState(ChunkState::Dirty);
                 m_dirty.push(slot.get());
 

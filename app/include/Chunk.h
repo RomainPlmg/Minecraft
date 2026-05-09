@@ -4,6 +4,8 @@
 
 #include "BlockRegistry.h"
 
+class TerrainGenerator;
+
 enum class ChunkState {
     Empty,
     Generated,
@@ -16,7 +18,7 @@ class Chunk {
     static constexpr int CHUNK_WIDTH = 16;
     static constexpr int CHUNK_HEIGHT = 256;
 
-    Chunk(int cx, int cz);
+    Chunk(int cx, int cz, const TerrainGenerator& generator);
 
     [[nodiscard]] std::optional<BlockType> getBlock(int x, int y, int z) const;
     [[nodiscard]] ChunkState state() const { return m_state; }
