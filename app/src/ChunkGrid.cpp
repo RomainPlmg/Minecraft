@@ -28,8 +28,8 @@ void ChunkGrid::setOrigin(int ox, int oz) {
         for (int x = m_ox - rd; x <= m_ox + rd; ++x) {
             // If old coord is outside the new world window
             if (x < ox - rd || x > ox + rd || z < oz - rd || z > oz + rd) {
-                // Remove the chunk
-                m_chunks.get(x, z).reset();
+                auto& slot = m_chunks.get(x, z);
+                slot.reset();
                 m_invalidated.push({x, z});
             }
         }

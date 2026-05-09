@@ -66,6 +66,10 @@ void World::update(float dt, const glm::vec3& pos) {
     }
 
     for (auto chunk : m_chunk_grid.pollDirtyChunks(MAX_CHUNK_MESHED_PER_FRAME)) {
+        // Before mesh the chunk, check that it was not invalidates in the meantime
+        auto* current = m_chunk_grid.getChunk(chunk->coords().x, chunk->coords().y);
+        if (current != chunk) continue;
+
         auto coords = chunk->coords();
         auto meshData = m_chunk_mesher.build(*chunk, m_chunk_grid);
         m_chunk_render_data.set(coords.x, coords.y, std::move(meshData));
