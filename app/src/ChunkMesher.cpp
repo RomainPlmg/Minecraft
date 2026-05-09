@@ -38,8 +38,6 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                         if (!neighbor || m_registry.get(*neighbor).transparent) {
                             m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
                         }
-                    } else {
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Front);
                     }
                 } else {
                     neighbor = chunk.getBlock(x, y, z + 1);
@@ -56,8 +54,6 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                         if (!neighbor || m_registry.get(*neighbor).transparent) {
                             m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
                         }
-                    } else {
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Back);
                     }
                 } else {
                     neighbor = chunk.getBlock(x, y, z - 1);
@@ -73,8 +69,6 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                         neighbor = neighbor_chunk->getBlock(0, y, z);
                         if (!neighbor || m_registry.get(*neighbor).transparent)
                             m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
-                    } else {
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Right);
                     }
                 } else {
                     neighbor = chunk.getBlock(x + 1, y, z);
@@ -89,8 +83,6 @@ ChunkRenderData ChunkMesher::build(const Chunk& chunk, const ChunkGrid& grid) {
                         neighbor = neighbor_chunk->getBlock(Chunk::CHUNK_WIDTH - 1, y, z);
                         if (!neighbor || m_registry.get(*neighbor).transparent)
                             m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
-                    } else {
-                        m_mesh_builder.addCubeFace({x, y, z}, block_def.side, MeshBuilder::Face::Left);
                     }
                 } else {
                     neighbor = chunk.getBlock(x - 1, y, z);
