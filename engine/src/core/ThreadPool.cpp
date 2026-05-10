@@ -10,7 +10,7 @@ ThreadPool::ThreadPool(size_t num_threads) {
 
                 {
                     // Lock the pool
-                    std::unique_lock<std::mutex> lock(m_mutex);
+                    std::unique_lock lock(m_mutex);
 
                     // Wait for pending task or pool stop
                     m_cv.wait(lock, [this] { return !m_tasks.empty() || m_stop; });
@@ -33,7 +33,7 @@ ThreadPool::ThreadPool(size_t num_threads) {
 ThreadPool::~ThreadPool() {
     {
         // Lock the pool
-        std::unique_lock<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         m_stop = true;
     }
 
@@ -44,16 +44,6 @@ ThreadPool::~ThreadPool() {
     for (auto& thread : m_threads) {
         thread.join();
     }
-}
-
-void ThreadPool::enqueue(std::function<void()> task) {
-    {
-        // Lock the pool
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_tasks.push(std::move(task));
-    }
-
-    m_cv.notify_all();
 }
 
 }  // namespace opticrafter
