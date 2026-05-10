@@ -4,6 +4,8 @@
 
 class DebugLayer : public opticrafter::Layer {
    public:
+    static constexpr float REFRESH_RATE_SECONDS = 0.5f;
+
     DebugLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine);
 
     void onEvent(SDL_Event& event) override;
@@ -11,5 +13,6 @@ class DebugLayer : public opticrafter::Layer {
     void onRender() override;
 
    private:
+    float m_accumulator = 0.f;
     float m_fps = 0.f;
 };

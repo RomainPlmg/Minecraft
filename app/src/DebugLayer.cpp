@@ -9,7 +9,20 @@ DebugLayer::DebugLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engi
 
 void DebugLayer::onEvent(SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 
-void DebugLayer::onUpdate(float dt) { m_fps = 1.f / dt; }
+void DebugLayer::onUpdate(float dt) {
+    static float smoothedFPS = 0.f;
+
+    if (dt > 0.f) {
+        m_accumulator += dt;
+        float currentFPS = 1.f / dt;
+        smoothedFPS = (m_fps * 0.4f) + (currentFPS * (1.f - 0.4f));
+    }
+
+    if (m_accumulator >= REFRESH_RATE_SECONDS) {
+        m_accumulator -= REFRESH_RATE_SECONDS;
+        m_fps = smoothedFPS;
+    }
+}
 
 void DebugLayer::onRender() {
     ImGui_ImplOpenGL3_NewFrame();
