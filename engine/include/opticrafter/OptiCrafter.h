@@ -14,6 +14,7 @@
 #include "Renderer.h"
 #include "RingBuffer2D.h"
 #include "TextureAtlas.h"
+#include "ThreadPool.h"
 #include "Timer.h"
 #include "Utils.h"
 #include "VertexArray.h"

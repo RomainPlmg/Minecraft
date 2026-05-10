@@ -4,6 +4,7 @@
 #include "EventBus.h"
 #include "LayerStack.h"
 #include "Renderer.h"
+#include "ThreadPool.h"
 #include "Timer.h"
 #include "Window.h"
 
@@ -28,6 +29,7 @@ class Engine {
     [[nodiscard]] Window* window() { return m_window.get(); }
     [[nodiscard]] Renderer* renderer() { return m_renderer.get(); }
     [[nodiscard]] EventBus* eventBus() { return &m_event_bus; }
+    [[nodiscard]] ThreadPool* threadPool() { return &m_thread_pool; }
 
    private:
     bool m_running = true;
@@ -36,6 +38,7 @@ class Engine {
     Timer m_timer;
     LayerStack m_layer_stack;
     EventBus m_event_bus;
+    ThreadPool m_thread_pool;
 };
 
 }  // namespace opticrafter
