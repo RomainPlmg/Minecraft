@@ -1,16 +1,15 @@
 #include "ChunkGrid.h"
 
-ChunkGrid::ChunkGrid(uint8_t render_distance, int ox, int oz)
+#include "TerrainGenerator.h"
+
+ChunkGrid::ChunkGrid(opticrafter::ThreadPool& thread_pool, uint8_t render_distance, int ox, int oz)
     : m_ox(0xFFFF), m_oz(0xFFFF), m_size(render_distance * 2 + 1), m_chunks(m_size) {
-    setOrigin(ox, oz);
+    setOrigin(thread_pool, ox, oz);
 }
 
 Chunk* ChunkGrid::getChunk(int cx, int cz) const {
-    if (!isInBounds(cx, cz)) {
-        return nullptr;
-    }
-
-    return m_chunks.get(cx, cz).get();
+    std::shared_lock lock(m_mutex);
+    return getChunkNoLock(cx, cz);
 }
 
 bool ChunkGrid::isInBounds(int cx, int cz) const {
@@ -18,7 +17,8 @@ bool ChunkGrid::isInBounds(int cx, int cz) const {
     return cx >= m_ox - half && cx <= m_ox + half && cz >= m_oz - half && cz <= m_oz + half;
 }
 
-void ChunkGrid::setOrigin(int ox, int oz) {
+void ChunkGrid::setOrigin(opticrafter::ThreadPool& thread_pool, int ox, int oz) {
+    std::unique_lock lock(m_mutex);
     if (ox == m_ox && oz == m_oz) return;
 
     int rd = (m_size - 1) / 2;
@@ -45,30 +45,31 @@ void ChunkGrid::setOrigin(int ox, int oz) {
             auto& slot = m_chunks.get(x, z);
 
             if (!slot || slot->coords().x != x || slot->coords().y != z) {
-                slot = std::make_unique<Chunk>(x, z, m_generator);
-                slot->setState(ChunkState::Dirty);
-                m_dirty.push(slot.get());
+                m_chunks_to_build.emplace_back(thread_pool.enqueue([x, z] {
+                    TerrainGenerator generator;
+                    return std::make_unique<Chunk>(x, z, generator);
+                }));
 
                 // Invalidates neighbors
-                auto* neighbor = getChunk(x, z + 1);
+                auto* neighbor = getChunkNoLock(x, z + 1);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
                     m_dirty.push(neighbor);
                 }
 
-                neighbor = getChunk(x, z - 1);
+                neighbor = getChunkNoLock(x, z - 1);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
                     m_dirty.push(neighbor);
                 }
 
-                neighbor = getChunk(x + 1, z);
+                neighbor = getChunkNoLock(x + 1, z);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
                     m_dirty.push(neighbor);
                 }
 
-                neighbor = getChunk(x - 1, z);
+                neighbor = getChunkNoLock(x - 1, z);
                 if (neighbor && neighbor->state() == ChunkState::Meshed) {
                     neighbor->setState(ChunkState::Dirty);
                     m_dirty.push(neighbor);
@@ -79,6 +80,7 @@ void ChunkGrid::setOrigin(int ox, int oz) {
 }
 
 std::vector<Chunk*> ChunkGrid::pollDirtyChunks(size_t max) {
+    std::unique_lock lock(m_mutex);
     std::vector<Chunk*> v;
 
     size_t i = 0;
@@ -92,6 +94,7 @@ std::vector<Chunk*> ChunkGrid::pollDirtyChunks(size_t max) {
 }
 
 std::vector<glm::ivec2> ChunkGrid::pollInvalidatedChunks() {
+    std::unique_lock lock(m_mutex);
     std::vector<glm::ivec2> v;
 
     while (!m_invalidated.empty()) {
@@ -100,4 +103,51 @@ std::vector<glm::ivec2> ChunkGrid::pollInvalidatedChunks() {
     }
 
     return v;
+}
+
+void ChunkGrid::pollPendingChunks() {
+    std::unique_lock lock(m_mutex);
+    auto it = m_chunks_to_build.begin();
+    while (it != m_chunks_to_build.end()) {
+        if (it->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            auto chunk = it->get();
+            auto coords = chunk->coords();
+            chunk->setState(ChunkState::Dirty);
+            m_chunks.get(coords.x, coords.y) = std::move(chunk);
+            m_dirty.push(m_chunks.get(coords.x, coords.y).get());
+
+            auto* neighbor = getChunkNoLock(coords.x, coords.y + 1);
+            if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                neighbor->setState(ChunkState::Dirty);
+                m_dirty.push(neighbor);
+            }
+            neighbor = getChunkNoLock(coords.x, coords.y - 1);
+            if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                neighbor->setState(ChunkState::Dirty);
+                m_dirty.push(neighbor);
+            }
+            neighbor = getChunkNoLock(coords.x + 1, coords.y);
+            if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                neighbor->setState(ChunkState::Dirty);
+                m_dirty.push(neighbor);
+            }
+            neighbor = getChunkNoLock(coords.x - 1, coords.y);
+            if (neighbor && neighbor->state() == ChunkState::Meshed) {
+                neighbor->setState(ChunkState::Dirty);
+                m_dirty.push(neighbor);
+            }
+
+            it = m_chunks_to_build.erase(it);
+        } else {
+            it++;
+        }
+    }
+}
+
+Chunk* ChunkGrid::getChunkNoLock(int cx, int cz) const {
+    if (!isInBounds(cx, cz)) {
+        return nullptr;
+    }
+
+    return m_chunks.get(cx, cz).get();
 }

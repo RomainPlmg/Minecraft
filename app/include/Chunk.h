@@ -9,6 +9,7 @@ class TerrainGenerator;
 enum class ChunkState {
     Empty,
     Generated,
+    Meshing,
     Meshed,
     Dirty,
 };

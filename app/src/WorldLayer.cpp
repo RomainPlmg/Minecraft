@@ -6,11 +6,11 @@
 #include "DebugLayer.h"
 
 WorldLayer::WorldLayer(opticrafter::LayerStack* stack, opticrafter::Engine& engine)
-    : opticrafter::Layer(stack, engine), m_world(*engine.renderer()) {
+    : opticrafter::Layer(stack, engine), m_world(engine) {
     pushOverlay<DebugLayer>();
 
-    m_camera = std::make_unique<opticrafter::Camera>(glm::vec3(
-        (float)Chunk::CHUNK_WIDTH / 2.f + .5f, 10.f, (float)Chunk::CHUNK_WIDTH / 2.f + .5f));
+    m_camera = std::make_unique<opticrafter::Camera>(
+        glm::vec3((float)Chunk::CHUNK_WIDTH / 2.f + .5f, 10.f, (float)Chunk::CHUNK_WIDTH / 2.f + .5f));
     m_world.init();
 
     m_engine.renderer()->shaders()->loadFromFile(ASSETS_DIR "shaders/cube.vsh", ASSETS_DIR "shaders/cube.fsh");
@@ -37,7 +37,7 @@ void WorldLayer::onUpdate(float dt) {
         move_dir = glm::normalize(move_dir);
     }
 
-    m_camera->move(move_dir * 25.f * dt);
+    m_camera->move(move_dir * 50.f * dt);
 
     if (opticrafter::Input::isMouseButtonPressed(SDL_BUTTON_MIDDLE)) {
         m_camera->freeze(false);
