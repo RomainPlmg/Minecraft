@@ -15,7 +15,7 @@ void DebugLayer::onUpdate(float dt) {
     if (dt > 0.f) {
         m_accumulator += dt;
         float currentFPS = 1.f / dt;
-        smoothedFPS = (m_fps * 0.4f) + (currentFPS * (1.f - 0.4f));
+        smoothedFPS = (smoothedFPS * 0.9f) + (currentFPS * 0.1f);
     }
 
     if (m_accumulator >= REFRESH_RATE_SECONDS) {
