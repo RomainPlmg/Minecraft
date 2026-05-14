@@ -37,7 +37,7 @@ void WorldLayer::onUpdate(float dt) {
         move_dir = glm::normalize(move_dir);
     }
 
-    m_camera->move(move_dir * 50.f * dt);
+    m_camera->move(move_dir * 200.f * dt);
 
     if (opticrafter::Input::isMouseButtonPressed(SDL_BUTTON_MIDDLE)) {
         m_camera->freeze(false);

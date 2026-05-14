@@ -19,6 +19,10 @@ struct MeshData {
 
 class MeshBuilder {
    public:
+    MeshBuilder() = default;
+    MeshBuilder(const MeshBuilder&) = delete;
+    MeshBuilder& operator=(const MeshBuilder&) = delete;
+
     enum class Face { Top, Bottom, Front, Back, Right, Left };
 
     void reset();

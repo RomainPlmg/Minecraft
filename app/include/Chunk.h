@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <shared_mutex>
 
 #include "BlockRegistry.h"
 
@@ -27,13 +28,12 @@ class Chunk {
     void setState(ChunkState state) { m_state = state; }
     bool contains(int x, int y, int z) const;
     glm::ivec2 coords() const { return m_coords; }
-    auto begin() const { return m_blocks.begin(); }
-    auto end() const { return m_blocks.end(); }
 
    private:
     std::array<BlockType, CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT> m_blocks;
-    glm::ivec2 m_coords;
-    ChunkState m_state = ChunkState::Empty;
+    const glm::ivec2 m_coords;
+    std::atomic<ChunkState> m_state = ChunkState::Empty;
+    mutable std::shared_mutex m_mutex;
 
     size_t index(int x, int y, int z) const { return x + CHUNK_WIDTH * (y + CHUNK_HEIGHT * z); }
 };
