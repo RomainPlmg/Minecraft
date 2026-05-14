@@ -54,6 +54,12 @@ void WorldRenderer::update(ChunkGrid& grid, const glm::vec3 coords) {
     while (it != m_chunks_to_waiting_neighbors.end()) {
         auto chunk = *it;
         const auto coords = chunk->coords();
+
+        if (!grid.isInBounds(coords.x, coords.y)) {
+            it = m_chunks_to_waiting_neighbors.erase(it);
+            continue;
+        }
+
         auto nf = grid.getChunk(coords.x, coords.y + 1);
         auto nb = grid.getChunk(coords.x, coords.y - 1);
         auto nr = grid.getChunk(coords.x + 1, coords.y);
@@ -93,7 +99,7 @@ void WorldRenderer::update(ChunkGrid& grid, const glm::vec3 coords) {
 
             auto chunk = grid.getChunk(mesh.coords.x, mesh.coords.z);
 
-            if (chunk) {
+            if (chunk && chunk->state() == ChunkState::Meshing) {
                 const auto coords = chunk->coords();
                 m_render_data.set(coords.x, coords.y, m_mesher.uploadToGPU(std::move(mesh)));
                 chunk->setState(ChunkState::Meshed);
