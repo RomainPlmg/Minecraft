@@ -7,7 +7,7 @@ The goal of this project is not to provide an official version of the engine, bu
 ## Requirements
 This project requires the following requirements:
 - A compiler compatible with C++20
-- An OS and GPU which support OpenGL 4.6 (Linux or Windows, MacOS is doesn't supports OpenGL since version 4.1)
+- An OS and GPU which support OpenGL 4.6 (Linux or Windows, MacOS doesn't supports OpenGL since version 4.1)
 - CMake > v3.30.0
 
 ## Technical description
