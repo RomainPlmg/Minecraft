@@ -4,6 +4,22 @@
 
 #include <tracy/Tracy.hpp>
 
+// Helper function to recover light level from ambient occlusion factor
+static float getAOFactor(int ao) {
+    switch (ao) {
+        case 0:
+            return 1.0f;
+        case 1:
+            return 0.8f;
+        case 2:
+            return 0.6f;
+        case 3:
+            return 0.4f;
+        default:
+            return 1.0f;
+    }
+}
+
 static opticrafter::VertexAttrib mesh_attrib[] = {
     {0, 3, GL_FLOAT, 0},
     {1, 2, GL_FLOAT, 3 * sizeof(float)},
@@ -16,57 +32,68 @@ void MeshBuilder::reset() {
     m_data.vertices.clear();
 }
 
-void MeshBuilder::addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, Face face) {
-    switch (face) {
-        case Face::Top:
-            addQuad({
-                Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_min.y}, {0, 1, 0}, 1.f},
-                Vertex{pos + glm::vec3(0, 1, 1), {region.uv_min.x, region.uv_max.y}, {0, 1, 0}, 1.f},
-                Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {0, 1, 0}, 1.f},
-                Vertex{pos + glm::vec3(1, 1, 0), {region.uv_max.x, region.uv_min.y}, {0, 1, 0}, 1.f},
-            });
-            break;
-        case Face::Bottom:
-            addQuad({
-                Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {0, -1, 0}, .6f},
-                Vertex{pos + glm::vec3(1, 0, 0), {region.uv_max.x, region.uv_min.y}, {0, -1, 0}, .6f},
-                Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_max.y}, {0, -1, 0}, .6f},
-                Vertex{pos + glm::vec3(0, 0, 1), {region.uv_min.x, region.uv_max.y}, {0, -1, 0}, .6f},
-            });
-            break;
-        case Face::Front:
-            addQuad({
-                Vertex{pos + glm::vec3(0, 0, 1), {region.uv_min.x, region.uv_min.y}, {0, 0, 1}, .8f},
-                Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_min.y}, {0, 0, 1}, .8f},
-                Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {0, 0, 1}, .8f},
-                Vertex{pos + glm::vec3(0, 1, 1), {region.uv_min.x, region.uv_max.y}, {0, 0, 1}, .8f},
-            });
-            break;
-        case Face::Back:
-            addQuad({
-                Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {0, 0, -1}, .8f},
-                Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_max.y}, {0, 0, -1}, .8f},
-                Vertex{pos + glm::vec3(1, 1, 0), {region.uv_max.x, region.uv_max.y}, {0, 0, -1}, .8f},
-                Vertex{pos + glm::vec3(1, 0, 0), {region.uv_max.x, region.uv_min.y}, {0, 0, -1}, .8f},
-            });
-            break;
-        case Face::Right:
-            addQuad({
-                Vertex{pos + glm::vec3(1, 0, 0), {region.uv_min.x, region.uv_min.y}, {1, 0, 0}, .8f},
-                Vertex{pos + glm::vec3(1, 1, 0), {region.uv_min.x, region.uv_max.y}, {1, 0, 0}, .8f},
-                Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {1, 0, 0}, .8f},
-                Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_min.y}, {1, 0, 0}, .8f},
-            });
-            break;
-        case Face::Left:
-            addQuad({
-                Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {-1, 0, 0}, .8f},
-                Vertex{pos + glm::vec3(0, 0, 1), {region.uv_max.x, region.uv_min.y}, {-1, 0, 0}, .8f},
-                Vertex{pos + glm::vec3(0, 1, 1), {region.uv_max.x, region.uv_max.y}, {-1, 0, 0}, .8f},
-                Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_max.y}, {-1, 0, 0}, .8f},
-            });
-            break;
-    }
+void MeshBuilder::addFrontCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region,
+                                   std::array<float, 4>& ao) {
+    std::array<float, 4> s = {getAOFactor(ao[0]), getAOFactor(ao[1]), getAOFactor(ao[2]), getAOFactor(ao[3])};
+    addQuad({
+
+        Vertex{pos + glm::vec3(0, 0, 1), {region.uv_min.x, region.uv_min.y}, {0, 0, 1}, .8f * s[0]},
+        Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_min.y}, {0, 0, 1}, .8f * s[1]},
+        Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {0, 0, 1}, .8f * s[2]},
+        Vertex{pos + glm::vec3(0, 1, 1), {region.uv_min.x, region.uv_max.y}, {0, 0, 1}, .8f * s[3]},
+    });
+}
+
+void MeshBuilder::addBackCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<float, 4>& ao) {
+    std::array<float, 4> s = {getAOFactor(ao[0]), getAOFactor(ao[1]), getAOFactor(ao[2]), getAOFactor(ao[3])};
+    addQuad({
+        Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {0, 0, -1}, .8f * s[0]},
+        Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_max.y}, {0, 0, -1}, .8f * s[1]},
+        Vertex{pos + glm::vec3(1, 1, 0), {region.uv_max.x, region.uv_max.y}, {0, 0, -1}, .8f * s[2]},
+        Vertex{pos + glm::vec3(1, 0, 0), {region.uv_max.x, region.uv_min.y}, {0, 0, -1}, .8f * s[3]},
+    });
+}
+
+void MeshBuilder::addRightCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region,
+                                   std::array<float, 4>& ao) {
+    std::array<float, 4> s = {getAOFactor(ao[0]), getAOFactor(ao[1]), getAOFactor(ao[2]), getAOFactor(ao[3])};
+    addQuad({
+        Vertex{pos + glm::vec3(1, 0, 0), {region.uv_min.x, region.uv_min.y}, {1, 0, 0}, .8f * s[0]},
+        Vertex{pos + glm::vec3(1, 1, 0), {region.uv_min.x, region.uv_max.y}, {1, 0, 0}, .8f * s[1]},
+        Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {1, 0, 0}, .8f * s[2]},
+        Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_min.y}, {1, 0, 0}, .8f * s[3]},
+    });
+}
+
+void MeshBuilder::addLeftCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<float, 4>& ao) {
+    std::array<float, 4> s = {getAOFactor(ao[0]), getAOFactor(ao[1]), getAOFactor(ao[2]), getAOFactor(ao[3])};
+    addQuad({
+        Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {-1, 0, 0}, .8f * s[0]},
+        Vertex{pos + glm::vec3(0, 0, 1), {region.uv_max.x, region.uv_min.y}, {-1, 0, 0}, .8f * s[1]},
+        Vertex{pos + glm::vec3(0, 1, 1), {region.uv_max.x, region.uv_max.y}, {-1, 0, 0}, .8f * s[2]},
+        Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_max.y}, {-1, 0, 0}, .8f * s[3]},
+    });
+}
+
+void MeshBuilder::addTopCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<float, 4>& ao) {
+    std::array<float, 4> s = {getAOFactor(ao[0]), getAOFactor(ao[1]), getAOFactor(ao[2]), getAOFactor(ao[3])};
+    addQuad({
+        Vertex{pos + glm::vec3(0, 1, 0), {region.uv_min.x, region.uv_min.y}, {0, 1, 0}, 1.f * s[0]},
+        Vertex{pos + glm::vec3(0, 1, 1), {region.uv_min.x, region.uv_max.y}, {0, 1, 0}, 1.f * s[1]},
+        Vertex{pos + glm::vec3(1, 1, 1), {region.uv_max.x, region.uv_max.y}, {0, 1, 0}, 1.f * s[2]},
+        Vertex{pos + glm::vec3(1, 1, 0), {region.uv_max.x, region.uv_min.y}, {0, 1, 0}, 1.f * s[3]},
+    });
+}
+
+void MeshBuilder::addBottomCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region,
+                                    std::array<float, 4>& ao) {
+    std::array<float, 4> s = {getAOFactor(ao[0]), getAOFactor(ao[1]), getAOFactor(ao[2]), getAOFactor(ao[3])};
+    addQuad({
+        Vertex{pos + glm::vec3(0, 0, 0), {region.uv_min.x, region.uv_min.y}, {0, -1, 0}, .6f * s[0]},
+        Vertex{pos + glm::vec3(1, 0, 0), {region.uv_max.x, region.uv_min.y}, {0, -1, 0}, .6f * s[1]},
+        Vertex{pos + glm::vec3(1, 0, 1), {region.uv_max.x, region.uv_max.y}, {0, -1, 0}, .6f * s[2]},
+        Vertex{pos + glm::vec3(0, 0, 1), {region.uv_min.x, region.uv_max.y}, {0, -1, 0}, .6f * s[3]},
+    });
 }
 
 std::unique_ptr<opticrafter::Mesh> MeshBuilder::build() {
