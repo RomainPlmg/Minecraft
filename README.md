@@ -65,7 +65,7 @@ Here on Tracy, with the `unordered_map`, we can see that build a single chunk to
     <img src="assets/images/tracy_build_chunk_no.png" alt="Tracy with unordered_map" width="800">
 </p>
 
-With the `array` instead `unordered_map`, I've gone down to less than 2ms:
+With the `array` instead `unordered_map`, I've gone down to less than 4ms:
 <p align="center">
     <img src="assets/images/tracy_build_chunk_o.png" alt="Tracy with array" width="800">
 </p>
