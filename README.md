@@ -93,16 +93,94 @@ if (!neighbor || m_registry.get(*neighbor).transparent)
 ```
 
 Then, if a chunk is remeshed during runtime, it is mandatory to mark its neighbors "Invalidated", because if the modified cube is at boundary, the neighbor chun's mesh need to be updated.
+One last thing, but to simplify the meshing, the world grid is one chunk greater than the rendered world. This guarantees that a chunk to be meshed will always have a valid neighbor.
 
 <p align="center">
     <img src="assets/images/wireframe.png" alt="Wireframe" width="800">
 </p>
 
 ### Multithreading
+This part is mandatory for a procedural generated engine. Indeed, if I run the game on only one thread, it will freeze at each chunk generation.
+The idea is to send the chunk generation and meshing on worker threads, and display it when it is ready.
+So I've created a `ThreadPool` class, in which I can send any task. For example, the chunk constructor:
+```cpp
+// Fill the new chunks
+for (int z = m_oz - bd; z <= m_oz + bd; ++z) {
+    for (int x = m_ox - bd; x <= m_ox + bd; ++x) {
+        auto& slot = m_chunks.get(x, z);
 
-<p align="left">
-    <img src="https://cdn-icons-png.flaticon.com/512/5578/5578703.png" alt="WIP" width="100">
-</p>
+        // If the chunk does not exists, submit a chunk build task to a thread and recover it's future
+        if (!slot || slot->coords().x != x || slot->coords().y != z) {
+            m_chunks_to_build.emplace_back(thread_pool.enqueue([x, z] {
+                TerrainGenerator generator;
+                return std::make_shared<Chunk>(x, z, generator);
+            }));
+        }
+    }
+}
+```
+
+But that's not the most complicated part. Because actually, individual chunk data don't depend on the other chunks. The other part was the multi threaded meshing. The problem of this part is that, as we saw before, a mesh depends on the neighbor chunks. So when we are (re)generating a chunk mesh, we need to lock the 4 neighbors. So in the `getChunk` function of the grid, we implement a `shared_lock` to lock the grid only for write operations:
+```cpp
+std::shared_ptr<Chunk> ChunkGrid::getChunk(int cx, int cz) const {
+    // Lock any write operation on the grid object, but allow read operations
+    std::shared_lock lock(m_mutex);
+    return getChunkNoLock(cx, cz);
+}
+```
+In the WorldRenderer, I've created 3 different structures to store the chunks and there meshes:
+```cpp
+std::set<std::shared_ptr<Chunk>> m_chunks_to_mesh;               // Use set to avoid duplicates
+std::set<std::shared_ptr<Chunk>> m_chunks_to_waiting_neighbors;  // Use set to avoid duplicates
+std::vector<std::future<MeshData>> m_pending_meshes;
+```
+When the grid provides new chunks to mesh, I check if it is at world boundary. If it's not, I check if all neighbors are valid. Then if it is the case, their're pushed into the `m_chunks_to_mesh` set or, where applicable, in the `m_chunks_to_waiting_neighbors`.
+
+When iterating on each chunk to mesh (provided by the chunk grid), I build a single chunk mesher per thread and build the mesh:
+```cpp
+it = m_chunks_to_mesh.begin();
+while (it != m_chunks_to_mesh.end()) {
+    auto chunk = *it;
+    const auto coords = chunk->coords();
+    auto nf = grid.getChunk(coords.x, coords.y + 1);
+    auto nb = grid.getChunk(coords.x, coords.y - 1);
+    auto nr = grid.getChunk(coords.x + 1, coords.y);
+    auto nl = grid.getChunk(coords.x - 1, coords.y);
+
+    chunk->setState(ChunkState::Meshing);
+    m_pending_meshes.emplace_back(m_engine.threadPool()->enqueue([chunk, nf, nb, nr, nl, this] {
+        ChunkMesher mesher(m_registry, m_chunk_grid);
+        return mesher.build(chunk, nf, nb, nr, nl);
+    }));
+
+    it = m_chunks_to_mesh.erase(it);
+}
+```
+
+Then, to avoid blocking the main thread, when you enqueue a task in the treadpool, you recover a `std::future`. At each frame, I am looping on the `futures` and check if it is ready. If it's the case, I send the mesh to the GPU and rendering the chunk.
+```cpp
+auto itv = m_pending_meshes.begin();
+while (itv != m_pending_meshes.end()) {
+    // Check if the future is ready
+    if (itv->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        auto mesh = itv->get();
+
+        auto chunk = grid.getChunk(mesh.coords.x, mesh.coords.z);
+
+        if (chunk && chunk->state() == ChunkState::Meshing) {
+            const auto coords = chunk->coords();
+            m_render_data.set(coords.x, coords.y, m_mesher.uploadToGPU(std::move(mesh)));
+            chunk->setState(ChunkState::Meshed);
+        }
+
+        itv = m_pending_meshes.erase(itv);
+    } else {
+        itv++;
+    }
+}
+```
+
+Chunk data is immutable after construction — blocks can't be modified at runtime. This removes the need to lock individual chunks during meshing ; only the grid itself is protected by a `shared_lock` to guard against concurrent reads during chunk insertion.
 
 ## Credits & Assets
 This engine uses the Faithful 32x resource pack for its visual components.
