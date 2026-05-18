@@ -12,18 +12,39 @@ The goal of this project is not to provide an official version of the engine, bu
     <img src="assets/images/image.png" alt="Illustration" width="800">
 </p>
 
-## Requirements
-This project requires the following requirements:
+## Build the project
+### ❗ Requirements
 - A compiler compatible with C++20
-- An OS and GPU which support OpenGL 4.6 (Linux or Windows, MacOS doesn't supports OpenGL since version 4.1)
+- An OS and GPU which support OpenGL 4.6 (Linux or Windows, MacOS doesn't support OpenGL since version 4.1)
 - CMake > v3.30.0
+
+### 📦 Installation
+
+1. Clone the project:
+   ```bash
+   git clone https://github.com/RomainPlmg/Minecraft.git
+   cd Minecraft
+   ```
+
+2. Create a build directory and generate the build files:
+    ```bash
+    cmake -B build -D TRACY_PROFILER=<ON/OFF> -D CMAKE_BUILD_TYPE=<Debug/Release>
+    ```
+3. Build the project
+    ```bash
+    cmake --build build -t Minecraft -j$(nproc)
+    ```
+4. Run the engine
+    ```bash
+    ./build/app/Minecraft
+    ```
 
 ## Technical description
 In this part I will try to explain the different technical choices I made and why.
 
 ### Memory consumption
 First of all, before any rendering, I worked on the memory consumption. Minecraft is a set of chunks, which contains 16\*16\*256 blocks.
-With a render distance of 12 for examples, I need to store more than 37 millions of blocks. You can't store all block properties in each of them, because you will just burn your RAM! We must therefore store our blocks intelligently.  
+With a render distance of 12 for examples, I need to store more than 37 millions of blocks. You can't store all block properties in each of them, because this would exhaust available RAM. We must therefore store our blocks intelligently.  
 The solution I've chosen is to make a very simple type registry system. Instead of storing all block properties in each block, I just store the block type (grass, stone, dirt, etc). This can be a simple enumeration based on a uint8:
 
 ```c++
@@ -71,7 +92,7 @@ With the `array` instead `unordered_map`, I've gone down to less than 4ms:
 </p>
 
 ### Meshing
-For the meshing system, I've done for now a very simple optimization, which is the face culling. The system is very simple: during the chunk meshing, for each block I check the nerighbor cube. If this cube is opaque, I don't render the face (since it is invisible).
+For the meshing system, I've done for now a very simple optimization, which is the face culling. The system is very simple: during the chunk meshing, for each block I check the neighbor cube. If this cube is opaque, I don't render the face (since it is invisible).
 An example for the front face of a cube:
 
 ```cpp
@@ -100,7 +121,7 @@ One last thing, but to simplify the meshing, the world grid is one chunk greater
 </p>
 
 ### Multithreading
-This part is mandatory for a procedural generated engine. Indeed, if I run the game on only one thread, it will freeze at each chunk generation.
+This part is mandatory for a procedural generation engine. Indeed, if I run the game on only one thread, it will freeze at each chunk generation.
 The idea is to send the chunk generation and meshing on worker threads, and display it when it is ready.
 So I've created a `ThreadPool` class, in which I can send any task. For example, the chunk constructor:
 ```cpp
@@ -134,7 +155,7 @@ std::set<std::shared_ptr<Chunk>> m_chunks_to_mesh;               // Use set to a
 std::set<std::shared_ptr<Chunk>> m_chunks_to_waiting_neighbors;  // Use set to avoid duplicates
 std::vector<std::future<MeshData>> m_pending_meshes;
 ```
-When the grid provides new chunks to mesh, I check if it is at world boundary. If it's not, I check if all neighbors are valid. Then if it is the case, their're pushed into the `m_chunks_to_mesh` set or, where applicable, in the `m_chunks_to_waiting_neighbors`.
+When the grid provides new chunks to mesh, I check if it is at world boundary. If it's not, I check if all neighbors are valid. Then if it is the case, there's pushed into the `m_chunks_to_mesh` set or, where applicable, in the `m_chunks_to_waiting_neighbors`.
 
 When iterating on each chunk to mesh (provided by the chunk grid), I build a single chunk mesher per thread and build the mesh:
 ```cpp
@@ -181,6 +202,10 @@ while (itv != m_pending_meshes.end()) {
 ```
 
 Chunk data is immutable after construction — blocks can't be modified at runtime. This removes the need to lock individual chunks during meshing ; only the grid itself is protected by a `shared_lock` to guard against concurrent reads during chunk insertion.
+We can observe worker threads on Tracy:
+<p align="center">
+    <img src="assets/images/tracy_multithread.png" alt="Wireframe" width="1000">
+</p>
 
 ## Credits & Assets
 This engine uses the Faithful 32x resource pack for its visual components.
