@@ -155,7 +155,7 @@ std::set<std::shared_ptr<Chunk>> m_chunks_to_mesh;               // Use set to a
 std::set<std::shared_ptr<Chunk>> m_chunks_to_waiting_neighbors;  // Use set to avoid duplicates
 std::vector<std::future<MeshData>> m_pending_meshes;
 ```
-When the grid provides new chunks to mesh, I check if it is at world boundary. If it's not, I check if all neighbors are valid. Then if it is the case, there's pushed into the `m_chunks_to_mesh` set or, where applicable, in the `m_chunks_to_waiting_neighbors`.
+When the grid provides new chunks to mesh, I check if it is at world boundary. If it's not, I check if all neighbors are valid. Then if it is the case, it is pushed into the `m_chunks_to_mesh` set or, where applicable, in the `m_chunks_to_waiting_neighbors`.
 
 When iterating on each chunk to mesh (provided by the chunk grid), I build a single chunk mesher per thread and build the mesh:
 ```cpp
@@ -178,7 +178,7 @@ while (it != m_chunks_to_mesh.end()) {
 }
 ```
 
-Then, to avoid blocking the main thread, when you enqueue a task in the treadpool, you recover a `std::future`. At each frame, I am looping on the `futures` and check if it is ready. If it's the case, I send the mesh to the GPU and rendering the chunk.
+Then, to avoid blocking the main thread, when you enqueue a task in the treadpool, you recover a `std::future`. At each frame, I am looping on the `futures` and check if they are ready. If it's the case, I send the mesh to the GPU and rendering the chunk.
 ```cpp
 auto itv = m_pending_meshes.begin();
 while (itv != m_pending_meshes.end()) {
