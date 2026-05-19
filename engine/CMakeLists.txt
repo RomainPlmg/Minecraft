@@ -52,19 +52,25 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
+FetchContent_Declare(
+        tracy
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+        GIT_TAG master
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+)
+
 if(TRACY_PROFILER)
-        FetchContent_Declare(
-                tracy
-                GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-                GIT_TAG master
-                GIT_SHALLOW TRUE
-                GIT_PROGRESS TRUE
-        )
         set(TRACY_ENABLE ON CACHE BOOL "" FORCE)
         set(TRACY_OPENGL ON CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable (tracy)
-        target_link_libraries(opticrafter PUBLIC TracyClient)
+else ()
+        set(TRACY_ENABLE OFF CACHE BOOL "" FORCE)
+        set(TRACY_OPENGL OFF CACHE BOOL "" FORCE)
+        message(STATUS "Tracy profiler is disabled.")
 endif()
+
+FetchContent_MakeAvailable (tracy)
+target_link_libraries(opticrafter PUBLIC TracyClient)
 
 target_link_libraries(opticrafter PUBLIC OpenGL::GL SDL3::SDL3 spdlog glad stb_image glm::glm)
 
