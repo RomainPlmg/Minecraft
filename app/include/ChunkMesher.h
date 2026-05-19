@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BlockRegistry.h"
+#include "ChunkGrid.h"
 #include "MeshBuilder.h"
 #include "opticrafter/OptiCrafter.h"
 
@@ -14,7 +15,10 @@ struct ChunkRenderData {
 
 class ChunkMesher {
    public:
-    explicit ChunkMesher(const BlockRegistry& registry) : m_registry(registry) { m_builder.reset(); }
+    explicit ChunkMesher(const BlockRegistry& registry, const ChunkGrid& chunk_grid)
+        : m_registry(registry), m_chunk_grid(chunk_grid) {
+        m_builder.reset();
+    }
 
     ChunkMesher(const ChunkMesher&) = delete;
     ChunkMesher& operator=(const ChunkMesher&) = delete;
@@ -26,5 +30,9 @@ class ChunkMesher {
 
    private:
     const BlockRegistry& m_registry;
+    const ChunkGrid& m_chunk_grid;
     MeshBuilder m_builder;
+
+    std::array<int, 4> computeAO(const glm::ivec3& pos, const glm::ivec3 normal, const glm::ivec3& t,
+                                   const glm::ivec3& bt);
 };

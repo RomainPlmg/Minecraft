@@ -15,6 +15,22 @@ std::shared_ptr<Chunk> ChunkGrid::getChunk(int cx, int cz) const {
     return getChunkNoLock(cx, cz);
 }
 
+std::optional<BlockType> ChunkGrid::getBlock(int x, int y, int z) const {
+    if (y < 0 || y >= Chunk::CHUNK_HEIGHT) return std::nullopt;
+
+    int cx = (int)std::floor((float)x / Chunk::CHUNK_WIDTH);
+    int cz = (int)std::floor((float)z / Chunk::CHUNK_WIDTH);
+
+    std::shared_lock lock(m_mutex);
+    auto chunk = getChunkNoLock(cx, cz);
+    if (!chunk) return std::nullopt;
+
+    int lx = ((x % Chunk::CHUNK_WIDTH) + Chunk::CHUNK_WIDTH) % Chunk::CHUNK_WIDTH;
+    int lz = ((z % Chunk::CHUNK_WIDTH) + Chunk::CHUNK_WIDTH) % Chunk::CHUNK_WIDTH;
+
+    return chunk->getBlockNoLock(lx, y, lz);
+}
+
 bool ChunkGrid::isInBounds(int cx, int cz) const {
     int half = m_size / 2;
     return cx >= m_ox - half && cx <= m_ox + half && cz >= m_oz - half && cz <= m_oz + half;

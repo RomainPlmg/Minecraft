@@ -27,6 +27,10 @@ std::optional<BlockType> Chunk::getBlock(int x, int y, int z) const {
     // Lock any write operation on the chunk
     std::shared_lock lock(m_mutex);
 
+    return getBlockNoLock(x, y, z);
+}
+
+std::optional<BlockType> Chunk::getBlockNoLock(int x, int y, int z) const {
     if (!contains(x, y, z)) return std::nullopt;
 
     return m_blocks[index(x, y, z)];

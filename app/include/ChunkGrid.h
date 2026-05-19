@@ -8,14 +8,15 @@ class ChunkGrid {
    public:
     ChunkGrid(opticrafter::ThreadPool& thread_pool, uint8_t build_distance, int ox = 0, int oz = 0);
 
-    std::shared_ptr<Chunk> getChunk(int cx, int cz) const;
+    [[nodiscard]] std::shared_ptr<Chunk> getChunk(int cx, int cz) const;
+    [[nodiscard]] std::optional<BlockType> getBlock(int x, int y, int z) const;
     bool isInBounds(int cx, int cz) const;
     bool isBoundary(int cx, int cz) const;
 
     void setOrigin(opticrafter::ThreadPool& thread_pool, int ox, int oz);
 
-    std::vector<std::shared_ptr<Chunk>> pollChunksToMesh(size_t max);
-    std::vector<glm::ivec2> pollInvalidatedChunks();
+    [[nodiscard]] std::vector<std::shared_ptr<Chunk>> pollChunksToMesh(size_t max);
+    [[nodiscard]] std::vector<glm::ivec2> pollInvalidatedChunks();
     void pollPendingChunks();
 
    private:

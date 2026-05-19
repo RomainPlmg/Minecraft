@@ -23,6 +23,7 @@ class Chunk {
     Chunk(int cx, int cz, const TerrainGenerator& generator);
 
     [[nodiscard]] std::optional<BlockType> getBlock(int x, int y, int z) const;
+    [[nodiscard]] std::optional<BlockType> getBlockNoLock(int x, int y, int z) const;
     [[nodiscard]] ChunkState state() const { return m_state; }
     void setBlock(int x, int y, int z, BlockType type);
     void setState(ChunkState state) { m_state = state; }
