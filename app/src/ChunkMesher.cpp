@@ -22,13 +22,14 @@ static int vertexAO(bool side1, bool side2, bool corner) {
 void ChunkMesher::reset() { m_builder.reset(); }
 
 MeshData ChunkMesher::build(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk> nf, std::shared_ptr<Chunk> nb,
-                            std::shared_ptr<Chunk> nr, std::shared_ptr<Chunk> nl) {
+                            std::shared_ptr<Chunk> nr, std::shared_ptr<Chunk> nl, std::shared_ptr<Chunk> nfr,
+                            std::shared_ptr<Chunk> nfl, std::shared_ptr<Chunk> nbr, std::shared_ptr<Chunk> nbl) {
     ZoneScopedN("ChunkMesherBuild");
 
     assert(nf && nb && nr && nl);
     m_builder.reset();
     auto coords = chunk->coords();
-    fillGrid(chunk, nf, nb, nr, nl);
+    fillGrid(chunk, nf, nb, nr, nl, nfr, nfl, nbr, nbl);
 
     int wx = coords.x * Chunk::CHUNK_WIDTH;
     int wz = coords.y * Chunk::CHUNK_WIDTH;
@@ -112,7 +113,8 @@ ChunkRenderData ChunkMesher::uploadToGPU(MeshData&& data) {
 }
 
 void ChunkMesher::fillGrid(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk> nf, std::shared_ptr<Chunk> nb,
-                           std::shared_ptr<Chunk> nr, std::shared_ptr<Chunk> nl) {
+                           std::shared_ptr<Chunk> nr, std::shared_ptr<Chunk> nl, std::shared_ptr<Chunk> nfr,
+                           std::shared_ptr<Chunk> nfl, std::shared_ptr<Chunk> nbr, std::shared_ptr<Chunk> nbl) {
     // Copy central chunk's data
     for (int z = 0; z < Chunk::CHUNK_WIDTH; ++z) {
         for (int y = 0; y < Chunk::CHUNK_HEIGHT; ++y) {
@@ -122,7 +124,7 @@ void ChunkMesher::fillGrid(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk> 
         }
     }
 
-    // Copy borders with neighbor chunk
+    // Copy borders with border neighbors chunk
     for (int y = 0; y < Chunk::CHUNK_HEIGHT; ++y) {
         for (int i = 0; i < Chunk::CHUNK_WIDTH; ++i) {
             m_grid[index(0, y, i + 1)] = nl->getBlockNoLock(Chunk::CHUNK_WIDTH - 1, y, i).value_or(BlockType::AIR);
@@ -130,6 +132,18 @@ void ChunkMesher::fillGrid(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk> 
             m_grid[index(i + 1, y, 0)] = nb->getBlockNoLock(i, y, Chunk::CHUNK_WIDTH - 1).value_or(BlockType::AIR);
             m_grid[index(i + 1, y, Chunk::CHUNK_WIDTH + 1)] = nf->getBlockNoLock(i, y, 0).value_or(BlockType::AIR);
         }
+    }
+
+    // Copy corners with corner neighbors chunk
+    for (int y = 0; y < Chunk::CHUNK_HEIGHT; ++y) {
+        m_grid[index(0, y, 0)] =
+            nbl->getBlockNoLock(Chunk::CHUNK_WIDTH - 1, y, Chunk::CHUNK_WIDTH - 1).value_or(BlockType::AIR);
+        m_grid[index(Chunk::CHUNK_WIDTH + 1, y, 0)] =
+            nbr->getBlockNoLock(0, y, Chunk::CHUNK_WIDTH - 1).value_or(BlockType::AIR);
+        m_grid[index(0, y, Chunk::CHUNK_WIDTH + 1)] =
+            nfl->getBlockNoLock(Chunk::CHUNK_WIDTH - 1, y, 0).value_or(BlockType::AIR);
+        m_grid[index(Chunk::CHUNK_WIDTH + 1, y, Chunk::CHUNK_WIDTH + 1)] =
+            nfr->getBlockNoLock(0, y, 0).value_or(BlockType::AIR);
     }
 }
 

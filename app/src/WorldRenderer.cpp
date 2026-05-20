@@ -39,8 +39,12 @@ void WorldRenderer::update(ChunkGrid& grid) {
         auto nb = grid.getChunk(coords.x, coords.y - 1);
         auto nr = grid.getChunk(coords.x + 1, coords.y);
         auto nl = grid.getChunk(coords.x - 1, coords.y);
+        auto nfr = grid.getChunk(coords.x + 1, coords.y + 1);
+        auto nfl = grid.getChunk(coords.x - 1, coords.y + 1);
+        auto nbr = grid.getChunk(coords.x + 1, coords.y - 1);
+        auto nbl = grid.getChunk(coords.x - 1, coords.y - 1);
 
-        if (nf && nb && nr && nl)
+        if (nf && nb && nr && nl && nfr && nfl && nbr && nbl)
             m_chunks_to_mesh.insert(chunk);
         else
             m_chunks_to_waiting_neighbors.insert(chunk);
@@ -61,8 +65,12 @@ void WorldRenderer::update(ChunkGrid& grid) {
         auto nb = grid.getChunk(coords.x, coords.y - 1);
         auto nr = grid.getChunk(coords.x + 1, coords.y);
         auto nl = grid.getChunk(coords.x - 1, coords.y);
+        auto nfr = grid.getChunk(coords.x + 1, coords.y + 1);
+        auto nfl = grid.getChunk(coords.x - 1, coords.y + 1);
+        auto nbr = grid.getChunk(coords.x + 1, coords.y - 1);
+        auto nbl = grid.getChunk(coords.x - 1, coords.y - 1);
 
-        if (nf && nb && nr && nl) {
+        if (nf && nb && nr && nl && nfr && nfl && nbr && nbl) {
             m_chunks_to_mesh.insert(chunk);
             it = m_chunks_to_waiting_neighbors.erase(it);
         } else {
@@ -78,11 +86,15 @@ void WorldRenderer::update(ChunkGrid& grid) {
         auto nb = grid.getChunk(coords.x, coords.y - 1);
         auto nr = grid.getChunk(coords.x + 1, coords.y);
         auto nl = grid.getChunk(coords.x - 1, coords.y);
+        auto nfr = grid.getChunk(coords.x + 1, coords.y + 1);
+        auto nfl = grid.getChunk(coords.x - 1, coords.y + 1);
+        auto nbr = grid.getChunk(coords.x + 1, coords.y - 1);
+        auto nbl = grid.getChunk(coords.x - 1, coords.y - 1);
 
         chunk->setState(ChunkState::Meshing);
-        m_engine.threadPool()->enqueue([this, chunk, nf, nb, nr, nl] {
+        m_engine.threadPool()->enqueue([this, chunk, nf, nb, nr, nl, nfr, nfl, nbr, nbl] {
             thread_local ChunkMesher mesher(m_registry);
-            m_ready_meshes.push(mesher.build(chunk, nf, nb, nr, nl));
+            m_ready_meshes.push(mesher.build(chunk, nf, nb, nr, nl, nfr, nfl, nbr, nbl));
         });
 
         it = m_chunks_to_mesh.erase(it);
