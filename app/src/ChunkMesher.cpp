@@ -115,6 +115,7 @@ ChunkRenderData ChunkMesher::uploadToGPU(MeshData&& data) {
 
 std::array<int, 4> ChunkMesher::computeAO(const glm::ivec3& pos, const glm::ivec3 normal, const glm::ivec3& t,
                                           const glm::ivec3& bt) {
+    ZoneScopedN("Compute AO");
     std::array<int, 4> ao;
 
     int i = 0;

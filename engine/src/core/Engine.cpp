@@ -8,7 +8,7 @@
 
 namespace opticrafter {
 
-Engine::Engine() {
+Engine::Engine() : m_thread_pool(std::thread::hardware_concurrency() - 4) {
     Logger::init();
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {

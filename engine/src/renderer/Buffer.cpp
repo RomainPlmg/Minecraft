@@ -9,7 +9,7 @@ namespace opticrafter {
 // ============================================================================
 VertexBuffer::VertexBuffer(std::span<const std::byte> data) {
     glCreateBuffers(1, &m_id);
-    glNamedBufferData(m_id, data.size_bytes(), data.data(), GL_STATIC_DRAW);
+    glNamedBufferStorage(m_id, data.size_bytes(), data.data(), GL_DYNAMIC_STORAGE_BIT);
 }
 
 VertexBuffer::~VertexBuffer() {

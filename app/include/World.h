@@ -16,7 +16,7 @@ class World {
 
    private:
     opticrafter::Engine& m_engine;
-    uint8_t m_render_distance = 16;
+    uint8_t m_render_distance = 4;
     BlockRegistry m_registry;
     opticrafter::TextureAtlas m_atlas;
 

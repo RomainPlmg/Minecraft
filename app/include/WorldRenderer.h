@@ -23,6 +23,6 @@ class WorldRenderer {
     ChunkMesher m_mesher;
     std::set<std::shared_ptr<Chunk>> m_chunks_to_mesh;               // Use set to avoid duplicates
     std::set<std::shared_ptr<Chunk>> m_chunks_to_waiting_neighbors;  // Use set to avoid duplicates
-    std::vector<std::future<MeshData>> m_pending_meshes;
+    opticrafter::TSQueue<MeshData> m_ready_meshes;
     opticrafter::RingBuffer2D<std::optional<ChunkRenderData>> m_render_data;
 };

@@ -84,31 +84,23 @@ void WorldRenderer::update(ChunkGrid& grid, const glm::vec3 coords) {
         auto nl = grid.getChunk(coords.x - 1, coords.y);
 
         chunk->setState(ChunkState::Meshing);
-        m_pending_meshes.emplace_back(m_engine.threadPool()->enqueue([chunk, nf, nb, nr, nl, this] {
-            ChunkMesher mesher(m_registry, m_chunk_grid);
-            return mesher.build(chunk, nf, nb, nr, nl);
-        }));
+        m_engine.threadPool()->enqueue([this, chunk, nf, nb, nr, nl] {
+            thread_local ChunkMesher mesher(m_registry, m_chunk_grid);
+            m_ready_meshes.push(mesher.build(chunk, nf, nb, nr, nl));
+        });
 
         it = m_chunks_to_mesh.erase(it);
     }
 
-    auto itv = m_pending_meshes.begin();
-    while (itv != m_pending_meshes.end()) {
-        // Check if the future is ready
-        if (itv->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            auto mesh = itv->get();
+    while (auto mesh_opt = m_ready_meshes.tryPop()) {
+        auto mesh = *mesh_opt;
 
-            auto chunk = grid.getChunk(mesh.coords.x, mesh.coords.z);
+        auto chunk = grid.getChunk(mesh.coords.x, mesh.coords.z);
 
-            if (chunk && chunk->state() == ChunkState::Meshing) {
-                const auto coords = chunk->coords();
-                m_render_data.set(coords.x, coords.y, m_mesher.uploadToGPU(std::move(mesh)));
-                chunk->setState(ChunkState::Meshed);
-            }
-
-            itv = m_pending_meshes.erase(itv);
-        } else {
-            itv++;
+        if (chunk && chunk->state() == ChunkState::Meshing) {
+            const auto coords = chunk->coords();
+            m_render_data.set(coords.x, coords.y, m_mesher.uploadToGPU(std::move(mesh)));
+            chunk->setState(ChunkState::Meshed);
         }
     }
 }

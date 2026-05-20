@@ -67,10 +67,12 @@ void ChunkGrid::setOrigin(opticrafter::ThreadPool& thread_pool, int ox, int oz) 
 
             // If the chunk does not exists, submit a chunk build task to a thread and recover it's future
             if (!slot || slot->coords().x != x || slot->coords().y != z) {
-                m_chunks_to_build.emplace_back(thread_pool.enqueue([x, z] {
-                    TerrainGenerator generator;
-                    return std::make_shared<Chunk>(x, z, generator);
-                }));
+                thread_pool.enqueue([this, x, z] {
+                    thread_local TerrainGenerator generator;
+                    auto new_chunk = std::make_shared<Chunk>(x, z, generator);
+                    new_chunk->setState(ChunkState::Dirty);
+                    m_chunks_built.push(std::move(new_chunk));
+                });
             }
         }
     }
@@ -105,28 +107,17 @@ std::vector<glm::ivec2> ChunkGrid::pollInvalidatedChunks() {
 }
 
 void ChunkGrid::pollPendingChunks() {
-    // Lock the grid objec
-    std::unique_lock lock(m_mutex);
+    while (auto chunk_opt = m_chunks_built.tryPop()) {
+        auto chunk = *chunk_opt;
+        auto coords = chunk->coords();
 
-    auto it = m_chunks_to_build.begin();
-    while (it != m_chunks_to_build.end()) {
-        // Check if there is ready futures
-        if (it->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            // If the future is ready, recover the chunk and push it into the dirty queue
-            auto chunk = it->get();
-            auto coords = chunk->coords();
+        if (isInBounds(coords.x, coords.y)) {
+            chunk->setState(ChunkState::Dirty);
 
-            // If the player has moved away in the meantime, ignore it.
-            if (isInBounds(coords.x, coords.y)) {
-                chunk->setState(ChunkState::Dirty);
-                m_chunks.get(coords.x, coords.y) = std::move(chunk);
-                m_dirty.push(m_chunks.get(coords.x, coords.y));
-            }
-
-            it = m_chunks_to_build.erase(it);
-        } else {
-            // If the current future is not ready, take the next one
-            it++;
+            // Lock the grid objec
+            std::unique_lock lock(m_mutex);
+            m_chunks.get(coords.x, coords.y) = std::move(chunk);
+            m_dirty.push(m_chunks.get(coords.x, coords.y));
         }
     }
 }

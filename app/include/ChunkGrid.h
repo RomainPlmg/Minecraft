@@ -1,7 +1,5 @@
 #pragma once
 
-#include <shared_mutex>
-
 #include "Chunk.h"
 
 class ChunkGrid {
@@ -22,7 +20,7 @@ class ChunkGrid {
    private:
     int m_ox, m_oz;  // Origins
     int m_size = 0;
-    std::vector<std::future<std::shared_ptr<Chunk>>> m_chunks_to_build;
+    opticrafter::TSQueue<std::shared_ptr<Chunk>> m_chunks_built;
     opticrafter::RingBuffer2D<std::shared_ptr<Chunk>> m_chunks;
 
     std::queue<std::shared_ptr<Chunk>> m_dirty;
