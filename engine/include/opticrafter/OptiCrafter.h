@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Renderer.h"
 #include "RingBuffer2D.h"
+#include "TSQueue.h"
 #include "TextureAtlas.h"
 #include "ThreadPool.h"
 #include "Timer.h"
