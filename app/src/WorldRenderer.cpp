@@ -11,18 +11,14 @@
 constexpr int MAX_CHUNK_MESHED_PER_FRAME = 8;
 
 WorldRenderer::WorldRenderer(opticrafter::Engine& engine, const BlockRegistry& registry,
-                             const opticrafter::TextureAtlas& atlas, const ChunkGrid& chunk_grid, int render_distance)
+                             const opticrafter::TextureAtlas& atlas, int render_distance)
     : m_engine(engine),
       m_registry(registry),
       m_atlas(atlas),
-      m_chunk_grid(chunk_grid),
-      m_mesher(registry, m_chunk_grid),
+      m_mesher(registry),
       m_render_data((render_distance + 1) * 2 + 1) {}
 
-void WorldRenderer::update(ChunkGrid& grid, const glm::vec3 coords) {
-    grid.setOrigin(*m_engine.threadPool(), std::floor(coords.x / (float)Chunk::CHUNK_WIDTH),
-                   std::floor(coords.z / (float)Chunk::CHUNK_WIDTH));
-
+void WorldRenderer::update(ChunkGrid& grid) {
     grid.pollPendingChunks();
 
     for (const auto& coord : grid.pollInvalidatedChunks()) {
@@ -85,7 +81,7 @@ void WorldRenderer::update(ChunkGrid& grid, const glm::vec3 coords) {
 
         chunk->setState(ChunkState::Meshing);
         m_engine.threadPool()->enqueue([this, chunk, nf, nb, nr, nl] {
-            thread_local ChunkMesher mesher(m_registry, m_chunk_grid);
+            thread_local ChunkMesher mesher(m_registry);
             m_ready_meshes.push(mesher.build(chunk, nf, nb, nr, nl));
         });
 

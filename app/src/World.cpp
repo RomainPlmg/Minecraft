@@ -4,7 +4,7 @@ World::World(opticrafter::Engine& engine)
     : m_engine(engine),
       m_atlas(32),
       m_chunk_grid(*m_engine.threadPool(), m_render_distance),
-      m_renderer(engine, m_registry, m_atlas, m_chunk_grid, m_render_distance) {
+      m_renderer(engine, m_registry, m_atlas, m_render_distance) {
     // Build the texture atlas
     m_atlas.add("stone", ASSETS_DIR "textures/stone.png");
     m_atlas.add("dirt", ASSETS_DIR "textures/dirt.png");
@@ -57,6 +57,10 @@ World::World(opticrafter::Engine& engine)
 
 void World::init() {}
 
-void World::update(float dt, const glm::vec3& coords) { m_renderer.update(m_chunk_grid, coords); }
+void World::update(float dt, const glm::vec3& coords) {
+    m_chunk_grid.update(*m_engine.threadPool(), std::floor(coords.x / (float)Chunk::CHUNK_WIDTH),
+                        std::floor(coords.z / (float)Chunk::CHUNK_WIDTH));
+    m_renderer.update(m_chunk_grid);
+}
 
 void World::render(const opticrafter::Frustum& frustum) { m_renderer.render(frustum); }

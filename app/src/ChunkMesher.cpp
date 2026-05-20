@@ -28,6 +28,7 @@ MeshData ChunkMesher::build(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk>
     assert(nf && nb && nr && nl);
     m_builder.reset();
     auto coords = chunk->coords();
+    fillGrid(chunk, nf, nb, nr, nl);
 
     int wx = coords.x * Chunk::CHUNK_WIDTH;
     int wz = coords.y * Chunk::CHUNK_WIDTH;
@@ -36,54 +37,51 @@ MeshData ChunkMesher::build(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk>
     for (int z = 0; z < Chunk::CHUNK_WIDTH; z++) {
         for (int y = 0; y < Chunk::CHUNK_HEIGHT; y++) {
             for (int x = 0; x < Chunk::CHUNK_WIDTH; x++) {
-                auto block_opt = chunk->getBlock(x, y, z);
-                if (!block_opt || *block_opt == BlockType::AIR) continue;
-                auto& block_def = m_registry.get(*block_opt);
+                BlockType block = getBlockLocal(x, y, z);
+                if (block == BlockType::AIR) continue;
+
+                auto& block_def = m_registry.get(block);
                 auto block_pos = glm::ivec3(x, y, z);
 
                 // === Top ===
-                auto neighbor = chunk->getBlock(x, y + 1, z);
-                if (!neighbor || m_registry.get(*neighbor).transparent) {
-                    auto ao = computeAO(world_pos + block_pos, {0, 1, 0}, {1, 0, 0}, {0, 0, 1});
+                BlockType neighbor = getBlockLocal(x, y + 1, z);
+                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
+                    auto ao = computeAO(block_pos, {0, 1, 0}, {1, 0, 0}, {0, 0, 1});
                     m_builder.addTopCubeFace(block_pos, block_def.top, ao);
                 }
 
                 // === Bottom ===
-                neighbor = chunk->getBlock(x, y - 1, z);
-                if (!neighbor || m_registry.get(*neighbor).transparent) {
-                    auto ao = computeAO(world_pos + block_pos, {0, -1, 0}, {1, 0, 0}, {0, 0, 1});
+                neighbor = getBlockLocal(x, y - 1, z);
+                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
+                    auto ao = computeAO(block_pos, {0, -1, 0}, {1, 0, 0}, {0, 0, 1});
                     m_builder.addBottomCubeFace(block_pos, block_def.bottom, ao);
                 }
 
                 // === Front ===
-                neighbor = chunk->getBlock(x, y, z + 1);
-                if (z == Chunk::CHUNK_WIDTH - 1) neighbor = nf->getBlock(x, y, 0);
-                if (!neighbor || m_registry.get(*neighbor).transparent) {
-                    auto ao = computeAO(world_pos + block_pos, {0, 0, 1}, {1, 0, 0}, {0, 1, 0});
+                neighbor = getBlockLocal(x, y, z + 1);
+                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
+                    auto ao = computeAO(block_pos, {0, 0, 1}, {1, 0, 0}, {0, 1, 0});
                     m_builder.addFrontCubeFace(block_pos, block_def.side, ao);
                 }
 
                 // === Back ===
-                neighbor = chunk->getBlock(x, y, z - 1);
-                if (z == 0) neighbor = nb->getBlock(x, y, Chunk::CHUNK_WIDTH - 1);
-                if (!neighbor || m_registry.get(*neighbor).transparent) {
-                    auto ao = computeAO(world_pos + block_pos, {0, 0, -1}, {1, 0, 0}, {0, 1, 0});
+                neighbor = getBlockLocal(x, y, z - 1);
+                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
+                    auto ao = computeAO(block_pos, {0, 0, -1}, {1, 0, 0}, {0, 1, 0});
                     m_builder.addBackCubeFace(block_pos, block_def.side, ao);
                 }
 
                 // === Right ===
-                neighbor = chunk->getBlock(x + 1, y, z);
-                if (x == Chunk::CHUNK_WIDTH - 1) neighbor = nr->getBlock(0, y, z);
-                if (!neighbor || m_registry.get(*neighbor).transparent) {
-                    auto ao = computeAO(world_pos + block_pos, {1, 0, 0}, {0, 0, 1}, {0, 1, 0});
+                neighbor = getBlockLocal(x + 1, y, z);
+                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
+                    auto ao = computeAO(block_pos, {1, 0, 0}, {0, 0, 1}, {0, 1, 0});
                     m_builder.addRightCubeFace(block_pos, block_def.side, ao);
                 }
 
                 // === Left ===
-                neighbor = chunk->getBlock(x - 1, y, z);
-                if (x == 0) neighbor = nl->getBlock(Chunk::CHUNK_WIDTH - 1, y, z);
-                if (!neighbor || m_registry.get(*neighbor).transparent) {
-                    auto ao = computeAO(world_pos + block_pos, {-1, 0, 0}, {0, 0, 1}, {0, 1, 0});
+                neighbor = getBlockLocal(x - 1, y, z);
+                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
+                    auto ao = computeAO(block_pos, {-1, 0, 0}, {0, 0, 1}, {0, 1, 0});
                     m_builder.addLeftCubeFace(block_pos, block_def.side, ao);
                 }
             }
@@ -113,6 +111,28 @@ ChunkRenderData ChunkMesher::uploadToGPU(MeshData&& data) {
     };
 }
 
+void ChunkMesher::fillGrid(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk> nf, std::shared_ptr<Chunk> nb,
+                           std::shared_ptr<Chunk> nr, std::shared_ptr<Chunk> nl) {
+    // Copy central chunk's data
+    for (int z = 0; z < Chunk::CHUNK_WIDTH; ++z) {
+        for (int y = 0; y < Chunk::CHUNK_HEIGHT; ++y) {
+            for (int x = 0; x < Chunk::CHUNK_WIDTH; ++x) {
+                m_grid[index(x + 1, y, z + 1)] = chunk->getBlockNoLock(x, y, z).value_or(BlockType::AIR);
+            }
+        }
+    }
+
+    // Copy borders with neighbor chunk
+    for (int y = 0; y < Chunk::CHUNK_HEIGHT; ++y) {
+        for (int i = 0; i < Chunk::CHUNK_WIDTH; ++i) {
+            m_grid[index(0, y, i + 1)] = nl->getBlockNoLock(Chunk::CHUNK_WIDTH - 1, y, i).value_or(BlockType::AIR);
+            m_grid[index(Chunk::CHUNK_WIDTH + 1, y, i + 1)] = nr->getBlockNoLock(0, y, i).value_or(BlockType::AIR);
+            m_grid[index(i + 1, y, 0)] = nb->getBlockNoLock(i, y, Chunk::CHUNK_WIDTH - 1).value_or(BlockType::AIR);
+            m_grid[index(i + 1, y, Chunk::CHUNK_WIDTH + 1)] = nf->getBlockNoLock(i, y, 0).value_or(BlockType::AIR);
+        }
+    }
+}
+
 std::array<int, 4> ChunkMesher::computeAO(const glm::ivec3& pos, const glm::ivec3 normal, const glm::ivec3& t,
                                           const glm::ivec3& bt) {
     ZoneScopedN("Compute AO");
@@ -124,13 +144,17 @@ std::array<int, 4> ChunkMesher::computeAO(const glm::ivec3& pos, const glm::ivec
         glm::ivec3 s2_pos = pos + normal + bt * uv.y;            // side2
         glm::ivec3 c_pos = pos + normal + t * uv.x + bt * uv.y;  // corner
 
-        auto side1 = m_chunk_grid.getBlock(s1_pos.x, s1_pos.y, s1_pos.z);
-        auto side2 = m_chunk_grid.getBlock(s2_pos.x, s2_pos.y, s2_pos.z);
-        auto corner = m_chunk_grid.getBlock(c_pos.x, c_pos.y, c_pos.z);
+        s1_pos.y = std::clamp(s1_pos.y, 0, 255);
+        s2_pos.y = std::clamp(s2_pos.y, 0, 255);
+        c_pos.y = std::clamp(c_pos.y, 0, 255);
 
-        bool bs1 = side1.has_value() && !m_registry.get(side1.value()).transparent;
-        bool bs2 = side2.has_value() && !m_registry.get(side2.value()).transparent;
-        bool bc = corner.has_value() && !m_registry.get(corner.value()).transparent;
+        auto side1 = getBlockLocal(s1_pos.x, s1_pos.y, s1_pos.z);
+        auto side2 = getBlockLocal(s2_pos.x, s2_pos.y, s2_pos.z);
+        auto corner = getBlockLocal(c_pos.x, c_pos.y, c_pos.z);
+
+        bool bs1 = !m_registry.get(side1).transparent;
+        bool bs2 = !m_registry.get(side2).transparent;
+        bool bc = !m_registry.get(corner).transparent;
 
         ao[i] = vertexAO(bs1, bs2, bc);
 
@@ -138,4 +162,9 @@ std::array<int, 4> ChunkMesher::computeAO(const glm::ivec3& pos, const glm::ivec
     }
 
     return ao;
+}
+
+inline BlockType ChunkMesher::getBlockLocal(int x, int y, int z) const {
+    if (y < 0 || y >= Chunk::CHUNK_HEIGHT) return BlockType::AIR;
+    return m_grid[index(x + 1, y, z + 1)];
 }

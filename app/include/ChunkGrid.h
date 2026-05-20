@@ -11,7 +11,7 @@ class ChunkGrid {
     bool isInBounds(int cx, int cz) const;
     bool isBoundary(int cx, int cz) const;
 
-    void setOrigin(opticrafter::ThreadPool& thread_pool, int ox, int oz);
+    void update(opticrafter::ThreadPool& thread_pool, int ox, int oz);
 
     [[nodiscard]] std::vector<std::shared_ptr<Chunk>> pollChunksToMesh(size_t max);
     [[nodiscard]] std::vector<glm::ivec2> pollInvalidatedChunks();

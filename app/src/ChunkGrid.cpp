@@ -6,7 +6,7 @@
 // This avoids the special case where a chunk has no neighbors
 ChunkGrid::ChunkGrid(opticrafter::ThreadPool& thread_pool, uint8_t build_distance, int ox, int oz)
     : m_ox(0xFFFF), m_oz(0xFFFF), m_size((build_distance + 1) * 2 + 1), m_chunks(m_size) {
-    setOrigin(thread_pool, ox, oz);
+    update(thread_pool, ox, oz);
 }
 
 std::shared_ptr<Chunk> ChunkGrid::getChunk(int cx, int cz) const {
@@ -36,7 +36,7 @@ bool ChunkGrid::isInBounds(int cx, int cz) const {
     return cx >= m_ox - half && cx <= m_ox + half && cz >= m_oz - half && cz <= m_oz + half;
 }
 
-void ChunkGrid::setOrigin(opticrafter::ThreadPool& thread_pool, int ox, int oz) {
+void ChunkGrid::update(opticrafter::ThreadPool& thread_pool, int ox, int oz) {
     // Lock the grid object
     std::unique_lock lock(m_mutex);
     if (ox == m_ox && oz == m_oz) return;

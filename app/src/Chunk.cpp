@@ -1,8 +1,11 @@
 #include "Chunk.h"
 
+#include <tracy/Tracy.hpp>
+
 #include "TerrainGenerator.h"
 
 Chunk::Chunk(int cx, int cz, const TerrainGenerator& generator) : m_coords(cx, cz) {
+    ZoneScopedN("Chunk::Chunk");
     m_blocks.fill(BlockType::AIR);
 
     for (int z = 0; z < CHUNK_WIDTH; z++) {
@@ -10,13 +13,13 @@ Chunk::Chunk(int cx, int cz, const TerrainGenerator& generator) : m_coords(cx, c
             int height = generator.getHeight(cx * CHUNK_WIDTH + x, cz * CHUNK_WIDTH + z);
             for (int y = 0; y <= height && y < CHUNK_HEIGHT; y++) {
                 if (y == height)
-                    setBlock(x, y, z, BlockType::GRASS);
+                    m_blocks[index(x, y, z)] = BlockType::GRASS;
                 else if (y >= height - 3 && y < height)
-                    setBlock(x, y, z, BlockType::DIRT);
+                    m_blocks[index(x, y, z)] = BlockType::DIRT;
                 else if (y > 0)
-                    setBlock(x, y, z, BlockType::STONE);
+                    m_blocks[index(x, y, z)] = BlockType::STONE;
                 else
-                    setBlock(x, y, z, BlockType::BEDROCK);
+                    m_blocks[index(x, y, z)] = BlockType::BEDROCK;
             }
         }
     }
