@@ -1,8 +1,16 @@
 #include "opticrafter/ThreadPool.h"
 
+#include "opticrafter/Logger.h"
+
 namespace opticrafter {
 
 ThreadPool::ThreadPool(size_t num_threads) {
+    if (num_threads == 0) {
+        num_threads = 1;
+    }
+
+    m_threads.reserve(num_threads);
+
     for (size_t i = 0; i < num_threads; i++) {
         m_threads.emplace_back([this] {
             while (true) {
