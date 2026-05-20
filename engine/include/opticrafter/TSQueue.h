@@ -55,7 +55,7 @@ class TSQueue {
 
    private:
     std::queue<T> m_queue;
-    std::shared_mutex m_mutex;
+    mutable std::shared_mutex m_mutex;
     std::condition_variable m_cv;
 };
 
