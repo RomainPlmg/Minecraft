@@ -10,6 +10,11 @@ target_include_directories(Minecraft PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
 target_compile_definitions(Minecraft PRIVATE -DASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets/")
 
 # ============================================================================
+# Options
+# ============================================================================
+option(TSAN "Enable ThreadSanitizer" OFF)
+
+# ============================================================================
 # Dependencies
 # ============================================================================
 FetchContent_Declare(
@@ -46,4 +51,10 @@ if(MSVC)
     target_compile_options(Minecraft PRIVATE /W4)
 else()
     target_compile_options(Minecraft PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(NOT MSVC AND TSAN)
+    message(STATUS "TSan enabled")
+    target_compile_options(Minecraft PUBLIC -fsanitize=thread -g -O1)
+    target_link_options(Minecraft PUBLIC -fsanitize=thread)
 endif()
