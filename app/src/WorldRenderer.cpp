@@ -116,7 +116,7 @@ void WorldRenderer::update(ChunkGrid& grid) {
 void WorldRenderer::render(const opticrafter::Frustum& frustum) {
     ZoneScopedN("WorldRender");
     TracyGpuZone("Draw chunks");
-    m_engine.renderer()->textures()->bind(m_atlas.handle());
+    m_atlas.bind();
 
     for (auto& data : m_render_data) {
         if (!data) continue;

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
-#include <span>
+#include <optional>
 #include <string>
 
 namespace opticrafter {
@@ -19,19 +19,16 @@ struct UVRegion {
 class TextureAtlas {
    public:
     TextureAtlas(uint32_t tile_size) : m_tile_size(tile_size) {}
+    ~TextureAtlas();
 
-    void add(const std::string& name, const std::string& path);
-    void build(Renderer& renderer);
-    UVRegion region(const std::string& name) const;
-    TextureID handle() const { return m_id; }
+    void loadTextures(const std::vector<std::string>& texture_paths);
+    void bind(uint32_t slot = 0) const;
+    std::optional<TextureID> get(const std::string& texture_name);
 
    private:
-    TextureID m_id = 0;
     uint32_t m_tile_size = 0;
-    std::unordered_map<std::string, std::string> m_sources;
-    std::unordered_map<std::string, UVRegion> m_regions;
-
-    void blit(std::span<uint8_t> dst, int dst_w, const std::string& path, const glm::ivec2& origin);
+    TextureID m_id = 0;
+    std::unordered_map<std::string, TextureID> m_layer_registry;
 };
 
 }  // namespace opticrafter

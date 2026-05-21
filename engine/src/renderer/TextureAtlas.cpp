@@ -1,75 +1,54 @@
 #include "opticrafter/TextureAtlas.h"
 
+#include <glad/gl.h>
 #include <stb_image.h>
 
+#include <filesystem>
+
 #include "opticrafter/Logger.h"
-#include "opticrafter/Renderer.h"
 
 namespace opticrafter {
 
-static int nextPow2(int n) {
-    int p = 1;
-    while (p < n) p <<= 1;
-    return p;
-}
+TextureAtlas::~TextureAtlas() {}
 
-void TextureAtlas::add(const std::string& name, const std::string& path) { m_sources[name] = path; }
+void TextureAtlas::loadTextures(const std::vector<std::string>& texture_paths) {
+    glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_id);
+    glTextureStorage3D(m_id, 1, GL_RGBA8, m_tile_size, m_tile_size, texture_paths.size());
 
-void TextureAtlas::build(Renderer& renderer) {
-    int n = m_sources.size();
-    int cols = (int)std::ceil(std::sqrt(n));
-    int rows = (cols * (cols - 1) >= n) ? cols - 1 : cols;
+    glTextureParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    // Resize the atlas to have a power of 2 (16, 32, 64, 128, etc.) -> Better for the GPU
-    int atlas_w = nextPow2(cols * m_tile_size);
-    int atlas_h = nextPow2(rows * m_tile_size);
+    int width, height, channel;
+    int layer = 0;
 
-    // Pixel buffer
-    std::vector<uint8_t> buffer(atlas_w * atlas_h * 4, 0);
-
-    int i = 0;
-    for (auto& [name, path] : m_sources) {
-        int x = (i % cols) * m_tile_size;
-        int y = (i / cols) * m_tile_size;
-
-        // Load image and copy it into the buffer at (x, y)
-        blit(buffer, atlas_w, path, {x, y});
-
-        // Calculate UVs
-        m_regions[name] = {
-            {(float)x / atlas_w, (float)y / atlas_h},
-            {(float)(x + m_tile_size) / atlas_w, (float)(y + m_tile_size) / atlas_h},
-        };
-        i++;
-    }
-
-    m_id = renderer.textures()->loadFromData(atlas_w, atlas_h, std::as_bytes(std::span{buffer}));
-}
-
-UVRegion TextureAtlas::region(const std::string& name) const {
-    if (!m_regions.contains(name)) {
-        LOG_CORE_ERROR("Unknown region '{}' in the current atlas.", name);
-        return {};
-    }
-    return m_regions.at(name);
-}
-
-void TextureAtlas::blit(std::span<uint8_t> dst, int dst_w, const std::string& path, const glm::ivec2& origin) {
-    int w, h, channels;
     stbi_set_flip_vertically_on_load(true);
-    uint8_t* src = stbi_load(path.c_str(), &w, &h, &channels, 4);
-    if (!src) {
-        LOG_CORE_ERROR("Failed to load texture: {}", path);
-        return;
+    for (const auto& path : texture_paths) {
+        std::filesystem::path p(path);
+        std::string texture_name = p.stem().string();
+        m_layer_registry[texture_name] = layer;
+
+        unsigned char* data = stbi_load(path.c_str(), &width, &height, &channel, 4);
+        glTextureSubImage3D(m_id, 0, 0, 0, layer++, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+    }
+}
+
+void TextureAtlas::bind(uint32_t slot) const {
+    if (!m_id) {
+        LOG_CORE_ERROR("Unknow texture id {}.", m_id);
+    }
+    glBindTextureUnit(slot, m_id);
+}
+
+std::optional<TextureID> TextureAtlas::get(const std::string& texture_name) {
+    if (!m_layer_registry.contains(texture_name)) {
+        LOG_CORE_ERROR("Unknow texture {}.", texture_name);
+        return std::nullopt;
     }
 
-    for (int row = 0; row < h; row++) {
-        int dst_offset = ((origin.y + row) * dst_w + origin.x) * 4;
-        int src_offset = row * w * 4;
-        std::memcpy(&dst[dst_offset], src + src_offset, w * 4);
-    }
-
-    stbi_image_free(src);
+    return m_layer_registry[texture_name];
 }
 
 }  // namespace opticrafter

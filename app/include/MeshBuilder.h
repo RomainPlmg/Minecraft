@@ -7,6 +7,7 @@
 struct Vertex {
     glm::vec3 position;
     glm::vec2 uv;
+    float texture_id;
     glm::vec3 normal;
     float luminosity;
 };
@@ -26,16 +27,18 @@ class MeshBuilder {
     enum class Face { Top, Bottom, Front, Back, Right, Left };
 
     void reset();
-    void addCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<float, 4>& ao, Face face);
-    
-    void addFrontCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<int, 4>& ao);
-    void addBackCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<int, 4>& ao);
-    void addRightCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<int, 4>& ao);
-    void addLeftCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<int, 4>& ao);
-    void addTopCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<int, 4>& ao);
-    void addBottomCubeFace(const glm::vec3& pos, const opticrafter::UVRegion& region, std::array<int, 4>& ao);
 
-    std::unique_ptr<opticrafter::Mesh> build();
+    void addFrontFace(const glm::vec3& pos, const glm::vec2 scale, opticrafter::TextureID tex_id,
+                      std::array<int, 4>& ao);
+    void addBackFace(const glm::vec3& pos, const glm::vec2 scale, opticrafter::TextureID tex_id,
+                     std::array<int, 4>& ao);
+    void addRightFace(const glm::vec3& pos, const glm::vec2 scale, opticrafter::TextureID tex_id,
+                      std::array<int, 4>& ao);
+    void addLeftFace(const glm::vec3& pos, const glm::vec2 scale, opticrafter::TextureID tex_id,
+                     std::array<int, 4>& ao);
+    void addTopFace(const glm::vec3& pos, const glm::vec2 scale, opticrafter::TextureID tex_id, std::array<int, 4>& ao);
+    void addBottomFace(const glm::vec3& pos, const glm::vec2 scale, opticrafter::TextureID tex_id,
+                       std::array<int, 4>& ao);
 
     const MeshData& getData() const { return m_data; }
 

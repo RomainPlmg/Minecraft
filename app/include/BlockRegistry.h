@@ -13,9 +13,9 @@ enum class BlockType : uint8_t {
 
 struct BlockDef {
     std::string name;
-    opticrafter::UVRegion top;
-    opticrafter::UVRegion side;
-    opticrafter::UVRegion bottom;
+    opticrafter::TextureID top;
+    opticrafter::TextureID side;
+    opticrafter::TextureID bottom;
     bool transparent;
 };
 

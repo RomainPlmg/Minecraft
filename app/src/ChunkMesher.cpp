@@ -8,10 +8,11 @@
 #include "Chunk.h"
 
 static opticrafter::VertexAttrib mesh_attrib[] = {
-    {0, 3, GL_FLOAT, 0},
-    {1, 2, GL_FLOAT, 3 * sizeof(float)},
-    {2, 3, GL_FLOAT, 5 * sizeof(float)},
-    {3, 1, GL_FLOAT, 8 * sizeof(float)},
+    {0, 3, GL_FLOAT, 0},                  // position
+    {1, 2, GL_FLOAT, 3 * sizeof(float)},  // uvs
+    {2, 1, GL_FLOAT, 5 * sizeof(float)},  // texture_id
+    {3, 3, GL_FLOAT, 6 * sizeof(float)},  // normal
+    {4, 1, GL_FLOAT, 9 * sizeof(float)},  // luminosity
 };
 
 static int vertexAO(bool side1, bool side2, bool corner) {
@@ -48,42 +49,42 @@ MeshData ChunkMesher::build(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk>
                 BlockType neighbor = getBlockLocal(x, y + 1, z);
                 if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
                     auto ao = computeAO(block_pos, {0, 1, 0}, {1, 0, 0}, {0, 0, 1});
-                    m_builder.addTopCubeFace(block_pos, block_def.top, ao);
+                    m_builder.addTopFace(block_pos, {1, 1}, block_def.top, ao);
                 }
 
                 // === Bottom ===
                 neighbor = getBlockLocal(x, y - 1, z);
                 if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
                     auto ao = computeAO(block_pos, {0, -1, 0}, {1, 0, 0}, {0, 0, 1});
-                    m_builder.addBottomCubeFace(block_pos, block_def.bottom, ao);
+                    m_builder.addBottomFace(block_pos, {1, 1}, block_def.bottom, ao);
                 }
 
                 // === Front ===
                 neighbor = getBlockLocal(x, y, z + 1);
                 if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
                     auto ao = computeAO(block_pos, {0, 0, 1}, {1, 0, 0}, {0, 1, 0});
-                    m_builder.addFrontCubeFace(block_pos, block_def.side, ao);
+                    m_builder.addFrontFace(block_pos, {1, 1}, block_def.side, ao);
                 }
 
                 // === Back ===
                 neighbor = getBlockLocal(x, y, z - 1);
                 if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
                     auto ao = computeAO(block_pos, {0, 0, -1}, {1, 0, 0}, {0, 1, 0});
-                    m_builder.addBackCubeFace(block_pos, block_def.side, ao);
+                    m_builder.addBackFace(block_pos, {1, 1}, block_def.side, ao);
                 }
 
                 // === Right ===
                 neighbor = getBlockLocal(x + 1, y, z);
                 if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
                     auto ao = computeAO(block_pos, {1, 0, 0}, {0, 0, 1}, {0, 1, 0});
-                    m_builder.addRightCubeFace(block_pos, block_def.side, ao);
+                    m_builder.addRightFace(block_pos, {1, 1}, block_def.side, ao);
                 }
 
                 // === Left ===
                 neighbor = getBlockLocal(x - 1, y, z);
                 if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
                     auto ao = computeAO(block_pos, {-1, 0, 0}, {0, 0, 1}, {0, 1, 0});
-                    m_builder.addLeftCubeFace(block_pos, block_def.side, ao);
+                    m_builder.addLeftFace(block_pos, {1, 1}, block_def.side, ao);
                 }
             }
         }

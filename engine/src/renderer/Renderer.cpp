@@ -58,9 +58,7 @@ void Renderer::beginScene(const Camera& camera) {
 
 void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4& transform) {
     ZoneScopedN("RendererDraw");
-    GLuint query;
-    glGenQueries(1, &query);
-    glBeginQuery(GL_PRIMITIVES_GENERATED, query);
+
     m_shader_manager->bind(material.id);
     m_shader_manager->setMat4(material.id, "u_proj", m_scene_data.proj);
     m_shader_manager->setMat4(material.id, "u_view", m_scene_data.view);
@@ -87,14 +85,9 @@ void Renderer::draw(const Mesh& mesh, const Material& material, const glm::mat4&
 
     mesh.vao.bind();
     glDrawElements(GL_TRIANGLES, mesh.ebo.count(), GL_UNSIGNED_INT, nullptr);
-    glEndQuery(GL_PRIMITIVES_GENERATED);
-
-    GLuint primitives = 0;
-    glGetQueryObjectuiv(query, GL_QUERY_RESULT, &primitives);
-    glDeleteQueries(1, &query);
 
     m_stats.draw_calls++;
-    m_stats.triangles += primitives;
+    m_stats.triangles += mesh.ebo.count() / 3;
 }
 
 }  // namespace opticrafter
