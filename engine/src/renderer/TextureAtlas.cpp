@@ -13,11 +13,11 @@ TextureAtlas::~TextureAtlas() {}
 
 void TextureAtlas::loadTextures(const std::vector<std::string>& texture_paths) {
     glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_id);
-    glTextureStorage3D(m_id, 1, GL_RGBA8, m_tile_size, m_tile_size, texture_paths.size());
+    glTextureStorage3D(m_id, 4, GL_RGBA8, m_tile_size, m_tile_size, texture_paths.size());
 
     glTextureParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTextureParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     int width, height, channel;
@@ -30,9 +30,17 @@ void TextureAtlas::loadTextures(const std::vector<std::string>& texture_paths) {
         m_layer_registry[texture_name] = layer;
 
         unsigned char* data = stbi_load(path.c_str(), &width, &height, &channel, 4);
+
+        if (!data) {
+            LOG_CORE_ERROR("Failed to load texture at path: {}", path);
+            continue;
+        }
+
         glTextureSubImage3D(m_id, 0, 0, 0, layer++, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
         stbi_image_free(data);
     }
+
+    glGenerateTextureMipmap(m_id);
 }
 
 void TextureAtlas::bind(uint32_t slot) const {
