@@ -25,70 +25,18 @@ void ChunkMesher::reset() { m_builder.reset(); }
 MeshData ChunkMesher::build(std::shared_ptr<Chunk> chunk, std::shared_ptr<Chunk> nf, std::shared_ptr<Chunk> nb,
                             std::shared_ptr<Chunk> nr, std::shared_ptr<Chunk> nl, std::shared_ptr<Chunk> nfr,
                             std::shared_ptr<Chunk> nfl, std::shared_ptr<Chunk> nbr, std::shared_ptr<Chunk> nbl) {
-    ZoneScopedN("ChunkMesherBuild");
+    ZoneScopedN("ChunkMesher::build");
 
-    assert(nf && nb && nr && nl);
+    assert(nf && nb && nr && nl && nfr && nfl && nbr && nbl);
     m_builder.reset();
     auto coords = chunk->coords();
     fillGrid(chunk, nf, nb, nr, nl, nfr, nfl, nbr, nbl);
 
+    m_greedy_mesher.run(std::span(m_grid), m_builder);
+
     int wx = coords.x * Chunk::CHUNK_WIDTH;
     int wz = coords.y * Chunk::CHUNK_WIDTH;
     glm::ivec3 world_pos = {wx, 0, wz};
-
-    for (int z = 0; z < Chunk::CHUNK_WIDTH; z++) {
-        for (int y = 0; y < Chunk::CHUNK_HEIGHT; y++) {
-            for (int x = 0; x < Chunk::CHUNK_WIDTH; x++) {
-                BlockType block = getBlockLocal(x, y, z);
-                if (block == BlockType::AIR) continue;
-
-                auto& block_def = m_registry.get(block);
-                auto block_pos = glm::ivec3(x, y, z);
-
-                // === Top ===
-                BlockType neighbor = getBlockLocal(x, y + 1, z);
-                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
-                    auto ao = computeAO(block_pos, {0, 1, 0}, {1, 0, 0}, {0, 0, 1});
-                    m_builder.addTopFace(block_pos, {1, 1}, block_def.top, ao);
-                }
-
-                // === Bottom ===
-                neighbor = getBlockLocal(x, y - 1, z);
-                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
-                    auto ao = computeAO(block_pos, {0, -1, 0}, {1, 0, 0}, {0, 0, 1});
-                    m_builder.addBottomFace(block_pos, {1, 1}, block_def.bottom, ao);
-                }
-
-                // === Front ===
-                neighbor = getBlockLocal(x, y, z + 1);
-                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
-                    auto ao = computeAO(block_pos, {0, 0, 1}, {1, 0, 0}, {0, 1, 0});
-                    m_builder.addFrontFace(block_pos, {1, 1}, block_def.side, ao);
-                }
-
-                // === Back ===
-                neighbor = getBlockLocal(x, y, z - 1);
-                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
-                    auto ao = computeAO(block_pos, {0, 0, -1}, {1, 0, 0}, {0, 1, 0});
-                    m_builder.addBackFace(block_pos, {1, 1}, block_def.side, ao);
-                }
-
-                // === Right ===
-                neighbor = getBlockLocal(x + 1, y, z);
-                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
-                    auto ao = computeAO(block_pos, {1, 0, 0}, {0, 0, 1}, {0, 1, 0});
-                    m_builder.addRightFace(block_pos, {1, 1}, block_def.side, ao);
-                }
-
-                // === Left ===
-                neighbor = getBlockLocal(x - 1, y, z);
-                if (neighbor == BlockType::AIR || m_registry.get(neighbor).transparent) {
-                    auto ao = computeAO(block_pos, {-1, 0, 0}, {0, 0, 1}, {0, 1, 0});
-                    m_builder.addLeftFace(block_pos, {1, 1}, block_def.side, ao);
-                }
-            }
-        }
-    }
 
     return {
         .vertices = m_builder.getData().vertices,

@@ -5,6 +5,7 @@
 #include "ChunkMesher.h"
 #include "opticrafter/OptiCrafter.h"
 
+class ChunkGrid;
 class BlockRegistry;
 
 class WorldRenderer {
