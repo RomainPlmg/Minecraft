@@ -1,0 +1,71 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "debug-tracy",
+            "displayName": "Debug with Tracy",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "TRACY_PROFILER": "ON",
+                "TSAN": "OFF"
+            }
+        },
+        {
+            "name": "debug-tsan",
+            "displayName": "Debug with ThreadSanitizer & Tracy",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "TRACY_PROFILER": "ON",
+                "TSAN": "ON"
+            }
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "TRACY_PROFILER": "OFF",
+                "TSAN": "OFF"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "TRACY_PROFILER": "OFF",
+                "TSAN": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+    {
+      "name": "debug-tracy",
+      "configurePreset": "debug-tracy"
+    },
+    {
+      "name": "debug-tsan",
+      "configurePreset": "debug-tsan"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ]
+}
